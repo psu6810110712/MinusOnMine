@@ -1,0 +1,31 @@
+# ข้อมูลแร่ 12 ชนิด (เรียงตามความหายาก)
+ORES = {
+    "stone": {"name": "Stone", "value": 1, "weight": 100},
+    "coal": {"name": "Coal", "value": 5, "weight": 80},
+    "copper": {"name": "Copper", "value": 15, "weight": 60},
+    "iron": {"name": "Iron", "value": 30, "weight": 40},
+    "gold": {"name": "Gold", "value": 100, "weight": 20},
+    "diamond": {"name": "Diamond", "value": 500, "weight": 5},
+    "emerald": {"name": "Emerald", "value": 1000, "weight": 3},
+    "ruby": {"name": "Ruby", "value": 2500, "weight": 2},
+    "sapphire": {"name": "Sapphire", "value": 5000, "weight": 1},
+    "amethyst": {"name": "Amethyst", "value": 10000, "weight": 0.5},
+    "obsidian": {"name": "Obsidian", "value": 50000, "weight": 0.1},
+    "mithril": {"name": "Mithril", "value": 100000, "weight": 0.01},
+}
+
+# ข้อมูลอัปเกรด 8 ชนิด
+UPGRADES = {
+    "pickaxe_tier_1": {"name": "Iron Pickaxe", "cost": 100, "multiplier": 2},
+    "pickaxe_tier_2": {"name": "Gold Pickaxe", "cost": 1000, "multiplier": 5},
+    "pickaxe_tier_3": {"name": "Diamond Pickaxe", "cost": 10000, "multiplier": 15},
+    "miner_bot_1": {"name": "Basic Auto-Miner", "cost": 500, "auto_mine_rate": 1},
+    "miner_bot_2": {"name": "Advanced Auto-Miner", "cost": 5000, "auto_mine_rate": 5},
+    "luck_potion": {"name": "Luck Potion", "cost": 2000, "luck_bonus": 1.5},
+    "backpack_expansion": {"name": "Bigger Backpack", "cost": 3000, "capacity": 50},
+    "dynamite": {"name": "Dynamite", "cost": 15000, "mine_burst": 10},
+}
+
+# ค่าคงที่อื่นๆ
+STARTING_MONEY = 0
+MAX_LEVEL = 100
