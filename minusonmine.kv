@@ -1,0 +1,89 @@
+# minusonmine.kv - ไฟล์ออกแบบ UI ของเกม MinusOnMine
+# ใช้ Kivy Language สำหรับจัดการ Widget และ Layout
+
+# =============================================
+# หน้า Menu (MenuScreen)
+# =============================================
+<MenuScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 20
+
+        # พื้นหลังสีเข้ม
+        canvas.before:
+            Color:
+                rgba: 0.12, 0.12, 0.18, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # ช่องว่างด้านบน
+        Widget:
+            size_hint_y: 0.2
+
+        # ชื่อเกม
+        Label:
+            text: '⛏ MinusOnMine ⛏'
+            font_size: '36sp'
+            bold: True
+            color: 1, 0.84, 0, 1
+            size_hint_y: 0.15
+
+        # คำอธิบายเกม
+        Label:
+            text: 'Idle Mining Simulator'
+            font_size: '16sp'
+            color: 0.7, 0.7, 0.8, 1
+            size_hint_y: 0.08
+
+        # ช่องว่าง
+        Widget:
+            size_hint_y: 0.1
+
+        # ปุ่มเริ่มเกม
+        Button:
+            text: 'Start Mining'
+            font_size: '22sp'
+            size_hint: 0.6, 0.1
+            pos_hint: {'center_x': 0.5}
+            background_color: 0.18, 0.8, 0.44, 1
+            color: 1, 1, 1, 1
+            on_press: root.manager.current = 'mining'
+
+        # ช่องว่างด้านล่าง
+        Widget:
+            size_hint_y: 0.15
+
+        # เวอร์ชัน
+        Label:
+            text: 'v0.1.0'
+            font_size: '12sp'
+            color: 0.4, 0.4, 0.5, 1
+            size_hint_y: 0.05
+
+
+# =============================================
+# หน้าขุดแร่ (MiningScreen) - โครงเปล่า
+# =============================================
+<MiningScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+
+        canvas.before:
+            Color:
+                rgba: 0.15, 0.13, 0.1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: 'Mining Screen - Coming Soon'
+            font_size: '20sp'
+            color: 1, 0.84, 0, 1
+
+        Button:
+            text: 'Back to Menu'
+            size_hint: 0.4, 0.08
+            pos_hint: {'center_x': 0.5}
+            on_press: root.manager.current = 'menu'
