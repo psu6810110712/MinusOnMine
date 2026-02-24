@@ -85,7 +85,7 @@
 
         # เวอร์ชัน
         Label:
-            text: 'v0.1.0'
+            text: 'v0.2.0'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
             font_size: '12sp'
             color: 0.4, 0.4, 0.5, 1
@@ -93,7 +93,7 @@
 
 
 # =============================================
-# หน้าขุดแร่ (MiningScreen) - โครงเปล่า
+# หน้าขุดแร่ (MiningScreen) - แสดง Grid Map
 # =============================================
 <MiningScreen>:
     BoxLayout:
@@ -101,23 +101,99 @@
 
         canvas.before:
             Color:
-                rgba: 0.15, 0.13, 0.1, 1
+                rgba: 0.10, 0.08, 0.06, 1
             Rectangle:
                 pos: self.pos
                 size: self.size
 
-        Label:
-            text: 'Mining Screen - Coming Soon'
-            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-            font_size: '25sp'
-            color: 1, 0.84, 0, 1
+        # ===== HUD ด้านบน =====
+        BoxLayout:
+            size_hint_y: 0.08
+            padding: [15, 5, 15, 5]
+            spacing: 10
 
-        Button:
-            text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-            font_size: '22sp'
-            size_hint: 0.4, 0.08
-            size_hint_x: 400
-            size_hint_y: 0
-            pos_hint: {'center_x': 0.5}
-            on_press: root.manager.current = 'menu'
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.13, 0.10, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            # ชื่อ map
+            Label:
+                text: 'Mine Map'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '20sp'
+                color: 1, 0.84, 0, 1
+                size_hint_x: 0.4
+                halign: 'left'
+                valign: 'center'
+                text_size: self.size
+
+            # ปุ่ม New Map
+            Button:
+                text: 'New Map'
+                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                font_size: '16sp'
+                size_hint_x: 0.3
+                background_color: 0.18, 0.8, 0.44, 1
+                color: 1, 1, 1, 1
+                on_press: root.new_map()
+
+            # ปุ่มกลับ Menu
+            Button:
+                text: 'Back'
+                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                font_size: '16sp'
+                size_hint_x: 0.3
+                background_color: 0.5, 0.3, 0.3, 1
+                color: 1, 1, 1, 1
+                on_press: root.manager.current = 'menu'
+
+        # ===== พื้นที่ Map (Grid จะวาดตรงนี้) =====
+        Widget:
+            id: map_widget
+            size_hint_y: 0.82
+
+        # ===== Legend ด้านล่าง =====
+        BoxLayout:
+            size_hint_y: 0.10
+            padding: [10, 5, 10, 5]
+            spacing: 5
+
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.13, 0.10, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Label:
+                text: 'Common'
+                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
+                font_size: '11sp'
+                color: 0.5, 0.5, 0.5, 1
+
+            Label:
+                text: 'Uncommon'
+                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
+                font_size: '11sp'
+                color: 0.8, 0.5, 0.2, 1
+
+            Label:
+                text: 'Rare'
+                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
+                font_size: '11sp'
+                color: 1.0, 0.84, 0.0, 1
+
+            Label:
+                text: 'Epic'
+                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
+                font_size: '11sp'
+                color: 0.6, 0.3, 0.8, 1
+
+            Label:
+                text: 'Legendary'
+                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
+                font_size: '11sp'
+                color: 0.75, 0.9, 1.0, 1
