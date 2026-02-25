@@ -55,21 +55,38 @@ class MapScreen(Screen):
         step = self.move_speed * dt
         player = self.ids.player_character
 
-        # เช็ครหัสปุ่ม: 119='w', 273='up'
-        if 119 in self.keys_pressed or 273 in self.keys_pressed:
-            player.y += step
-            
-        # 115='s', 274='down'
-        if 115 in self.keys_pressed or 274 in self.keys_pressed:
-            player.y -= step
-            
-        # 97='a', 276='left'
-        if 97 in self.keys_pressed or 276 in self.keys_pressed:
-            player.x -= step
-            
-        # 100='d', 275='right'
-        if 100 in self.keys_pressed or 275 in self.keys_pressed:
-            player.x += step
+        # 1. จำลองพิกัดตำแหน่งใหม่ขึ้นมาก่อน (ยังไม่ขยับจริง)
+        new_x = player.x
+        new_y = player.y
+
+        # 2. คำนวณทิศทางการเดินตามปุ่มที่กด
+        if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W หรือ Up
+            new_y += step
+        if 115 in self.keys_pressed or 274 in self.keys_pressed:  # S หรือ Down
+            new_y -= step
+        if 97 in self.keys_pressed or 276 in self.keys_pressed:   # A หรือ Left
+            new_x -= step
+        if 100 in self.keys_pressed or 275 in self.keys_pressed:  # D หรือ Right
+            new_x += step
+
+        # ==========================================
+        # 3. ระบบกำแพงกั้นขอบจอ (Boundary Collision)
+        # ==========================================
+        # แกน X: ห้ามทะลุขอบซ้าย (0) และขอบขวา (ความกว้างหน้าจอ - ความกว้างตัวละคร)
+        if new_x < 0:
+            new_x = 0
+        elif new_x > self.width - player.width:
+            new_x = self.width - player.width
+
+        # แกน Y: ห้ามทะลุขอบล่าง (0) และขอบบน (ความสูงหน้าจอ - ความสูงตัวละคร)
+        if new_y < 0:
+            new_y = 0
+        elif new_y > self.height - player.height:
+            new_y = self.height - player.height
+
+        # 4. สั่งให้ตัวละครขยับไปที่พิกัดใหม่ที่ผ่านการเช็กกำแพงแล้ว
+        player.x = new_x
+        player.y = new_y
 # =============================================
 # แอปหลัก (Main App)
 # =============================================
