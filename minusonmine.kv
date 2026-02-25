@@ -55,7 +55,7 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.18, 0.8, 0.44, 1
             color: 1, 1, 1, 1
-            on_press: root.manager.current = 'mining'
+            on_press: root.manager.current = 'map'
 
         # เพิ่มปุ่มตั้งค่า (Settings)
         Button:
@@ -78,6 +78,7 @@
             background_color: 0.8, 0.2, 0.2, 1
             on_press: app.stop() # คำสั่งปิดแอป Kivy
 
+
         # ช่องว่างด้านล่าง
         Widget:
             size_hint_y: 0.05
@@ -92,107 +93,54 @@
 
 
 # =============================================
-# หน้าขุดแร่ (MiningScreen) - แสดง Grid Map
+# หน้าแผนที่ขุดแร่ (MapScreen)
 # =============================================
-<MiningScreen>:
-    BoxLayout:
-        orientation: 'vertical'
+<MapScreen>:
+    FloatLayout:
+        # ===== 1. เลเยอร์ของโลก (World Layer) =====
+        # เราจะกำหนดให้โลกใหญ่กว่าหน้าจอมากๆ (เช่น 2400x2400)
+        RelativeLayout:
+            id: world_layer
+            size_hint: None, None
+            size: 2400, 2400  #ปรับความใหญ่ของแมพตรงนี้
 
-        canvas.before:
-            Color:
-                rgba: 0.10, 0.08, 0.06, 1
-            Rectangle:
-                pos: self.pos
-                size: self.size
-
-        # ===== HUD ด้านบน =====
-        BoxLayout:
-            size_hint_y: 0.08
-            padding: [15, 5, 15, 5]
-            spacing: 10
-
+            # พื้นหลังแผนที่รูปภาพ
             canvas.before:
                 Color:
-                    rgba: 0.15, 0.13, 0.10, 1
+                    rgba: 1, 1, 1, 1 
                 Rectangle:
-                    pos: self.pos
+                    pos: 0, 0
                     size: self.size
+                    source: 'ground.png' 
 
-            # ชื่อ map
-            Label:
-                text: 'Mine Map'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '20sp'
-                color: 1, 0.84, 0, 1
-                size_hint_x: 0.4
-                halign: 'left'
-                valign: 'center'
-                text_size: self.size
+            # ตัวละคร (ให้อยู่ข้างใน World)
+            PlayerWidget:
+                id: player_character
+                pos: 1000, 800 # ให้เริ่มเกิดที่พี่กัดนี้
 
-            # ปุ่ม New Map
-            Button:
-                text: 'New Map'
-                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-                font_size: '16sp'
-                size_hint_x: 0.3
-                background_color: 0.18, 0.8, 0.44, 1
-                color: 1, 1, 1, 1
-                on_press: root.new_map()
+        # ===== 2. UI บนหน้าจอ =====
+        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
+        Button:
+            text: 'Back to Menu'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.98}
+            background_color: 0.8, 0.2, 0.2, 1
+            on_press: root.manager.current = 'menu'
 
-            # ปุ่มกลับ Menu
-            Button:
-                text: 'Back'
-                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-                font_size: '16sp'
-                size_hint_x: 0.3
-                background_color: 0.5, 0.3, 0.3, 1
-                color: 1, 1, 1, 1
-                on_press: root.manager.current = 'menu'
 
-        # ===== พื้นที่ Map (Grid จะวาดตรงนี้) =====
-        Widget:
-            id: map_widget
-            size_hint_y: 0.82
+# =============================================
+# สร้างหน้าตาของตัวละคร (Player)
+# =============================================
+<PlayerWidget@Widget>:
+    size_hint: None, None
+    size: 50, 50
+    canvas:
+        Color:
+            rgba: 0.2, 0.6, 1, 1  # สีฟ้า (เดี๋ยวเราค่อยเปลี่ยนเป็นรูปภาพทีหลังได้)
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
-        # ===== Legend ด้านล่าง =====
-        BoxLayout:
-            size_hint_y: 0.10
-            padding: [10, 5, 10, 5]
-            spacing: 5
 
-            canvas.before:
-                Color:
-                    rgba: 0.15, 0.13, 0.10, 1
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-
-            Label:
-                text: 'Common'
-                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
-                font_size: '11sp'
-                color: 0.5, 0.5, 0.5, 1
-
-            Label:
-                text: 'Uncommon'
-                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
-                font_size: '11sp'
-                color: 0.8, 0.5, 0.2, 1
-
-            Label:
-                text: 'Rare'
-                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
-                font_size: '11sp'
-                color: 1.0, 0.84, 0.0, 1
-
-            Label:
-                text: 'Epic'
-                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
-                font_size: '11sp'
-                color: 0.6, 0.3, 0.8, 1
-
-            Label:
-                text: 'Legendary'
-                font_name: 'assets/fonts/PixelifySans-Regular.ttf'
-                font_size: '11sp'
-                color: 0.75, 0.9, 1.0, 1
