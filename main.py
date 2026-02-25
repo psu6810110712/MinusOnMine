@@ -11,6 +11,7 @@ from game_logic import GameState
 from game_data import ORE_COLORS, GROUND_COLOR, ORES
 from kivy.core.image import Image as CoreImage
 from kivy.core.window import Window
+from kivy.graphics import Color, Rectangle, PushMatrix, PopMatrix, Translate
 
 # =============================================
 # หน้าจอต่างๆ (Screens)
@@ -22,210 +23,84 @@ class MenuScreen(Screen):
 
 
 class MiningScreen(Screen):
+    """หน้าขุดแร่ (Mining) - แสดง Grid Map"""
+    def new_map(self):
+        """สร้าง Map ใหม่"""
+        pass
+
+
+class MapScreen(Screen):
+    """หน้าจอแผนที่สำหรับเดินสำรวจ"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.game_state = None
-        self.textures = {} 
-        
-        # 1. พิกัดตัวละคร (เปลี่ยนเป็นทศนิยมเพื่อความลื่นไหล)
-        self.player_x = 0.0
-        self.player_y = 0.0
-        self.player_speed = 4.0 # ความเร็วในการเดิน (ช่องต่อวินาที)
-        
-        # 2. เก็บสถานะปุ่มที่ถูกกดค้างไว้
-        self.pressed_keys = set()
-        # 3. เก็บอ็อบเจกต์รูปตัวละครบนจอเพื่อเอาไว้อัปเดตแค่พิกัด
-        self.player_rect = None 
-        self.update_event = None
+        self.keys_pressed = set() # เซ็ตสำหรับเก็บปุ่มที่กำลังถูกกดค้างไว้
+        self.move_speed = 300     # ความเร็วตัวละคร (พิกเซล ต่อ วินาที)
 
     def on_enter(self):
-        self.game_state = GameState()
-        
-        map_widget = self.ids.get('map_widget')
-        if map_widget:
-            map_widget.bind(size=self._trigger_redraw, pos=self._trigger_redraw)
-
-        # ผูก Event ปุ่มคีย์บอร์ด (ทั้งตอนกด และ ตอนปล่อยปุ่ม)
-        Window.bind(on_key_down=self._on_key_down)
-        Window.bind(on_key_up=self._on_key_up)
-        
-        # 4. สร้าง Loop ให้เกมอัปเดต 60 ครั้งต่อวินาที (60 FPS)
-        self.update_event = Clock.schedule_interval(self.update_player_pos, 1.0 / 60.0)
-
-        Clock.schedule_once(lambda dt: self.draw_map(), 0.1)
+        """ฟังก์ชันนี้จะทำงานอัตโนมัติเมื่อเข้ามาที่หน้านี้"""
+        # ตรวจสอบว่า player_character มีอยู่ก่อน
+        if 'player_character' in self.ids:
+            Window.bind(on_key_down=self.on_keyboard_down)
+            Window.bind(on_key_up=self.on_keyboard_up)
+            self.game_loop = Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     def on_leave(self):
-        map_widget = self.ids.get('map_widget')
-        if map_widget:
-            map_widget.unbind(size=self._trigger_redraw, pos=self._trigger_redraw)
-            
-        Window.unbind(on_key_down=self._on_key_down)
-        Window.unbind(on_key_up=self._on_key_up)
-        
-        if self.update_event:
-            self.update_event.cancel()
+        """ฟังก์ชันนี้จะทำงานอัตโนมัติเมื่อออกจากหน้านี้"""
+        if hasattr(self, 'game_loop'):
+            Window.unbind(on_key_down=self.on_keyboard_down)
+            Window.unbind(on_key_up=self.on_keyboard_up)
+            self.game_loop.cancel()
+            self.keys_pressed.clear()
 
-    def _trigger_redraw(self, instance, value):
-        """ตัวรับ Event เมื่อหน้าต่างถูกย่อ/ขยาย"""
-        if self.game_state:
-            self.draw_map()
+    def on_keyboard_down(self, window, key, scancode, codepoint, modifiers):
+        """บันทึกรหัสปุ่ม (เป็นตัวเลข) ที่ถูกกด"""
+        self.keys_pressed.add(key)
 
-    # --- ระบบตรวจสอบปุ่มกดค้าง ---
-    def _on_key_down(self, instance, keyboard, keycode, text, modifiers):
-        if text in ['w', 'a', 's', 'd']:
-            self.pressed_keys.add(text)
+    def on_keyboard_up(self, window, key, scancode):
+        """ลบรหัสปุ่มออกเมื่อปล่อยนิ้ว"""
+        if key in self.keys_pressed:
+            self.keys_pressed.remove(key)
 
-    def _on_key_up(self, instance, keyboard, keycode):
-        # แปลงรหัสตัวเลข (keyboard) ให้กลับเป็นตัวอักษรภาษาอังกฤษ
-        try:
-            text = chr(keyboard)
-            if text in self.pressed_keys:
-                self.pressed_keys.remove(text)
-        except ValueError:
-            pass
-        
-    # --- ระบบอัปเดตพิกัดแบบอิสระ (60 FPS) ---
-    def update_player_pos(self, dt):
-        if not self.game_state or not self.player_rect:
+    def update(self, dt):
+        """Game Loop: จะถูกเรียก 60 ครั้งต่อวินาทีเพื่อขยับตัวละคร"""
+        if 'player_character' not in self.ids:
             return
-
-        moved = False
-        move_distance = self.player_speed * dt
-        
-        max_x = self.game_state.grid_width - 1
-        max_y = self.game_state.grid_height - 1
-
-        if 'w' in self.pressed_keys and self.player_y > 0:
-            self.player_y -= move_distance
-            moved = True
-        if 's' in self.pressed_keys and self.player_y < max_y:
-            self.player_y += move_distance
-            moved = True
-        if 'a' in self.pressed_keys and self.player_x > 0:
-            self.player_x -= move_distance
-            moved = True
-        if 'd' in self.pressed_keys and self.player_x < max_x:
-            self.player_x += move_distance
-            moved = True
-
-        if moved:
-            self.update_player_graphics()
-
-    def update_player_graphics(self):
-        """คำนวณและอัปเดตพิกัดของรูปตัวละครบนหน้าจอ โดยไม่ต้องวาดแผนที่ใหม่ทั้งหมด"""
-        map_widget = self.ids.get('map_widget')
-        gs = self.game_state
-        tile_size = min(map_widget.width / gs.grid_width, map_widget.height / gs.grid_height)
-        total_map_w = tile_size * gs.grid_width
-        total_map_h = tile_size * gs.grid_height
-        
-        offset_x = map_widget.x + (map_widget.width - total_map_w) / 2
-        offset_y = map_widget.y + (map_widget.height - total_map_h) / 2
-
-        player_draw_x = offset_x + self.player_x * tile_size
-        player_draw_y = offset_y + (gs.grid_height - 1 - self.player_y) * tile_size
-        
-        self.player_rect.pos = (player_draw_x, player_draw_y)
-
-    # --- ระบบโหลดภาพ ---
-    def get_texture(self, source_file):
-        """โหลดภาพทั้งไฟล์ให้พิกเซลคมชัด"""
-        if source_file in self.textures:
-            return self.textures[source_file] 
             
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(base_path, source_file)
-        
-        if not os.path.exists(path):
-            print(f"Error: ไม่พบไฟล์ที่ {path}")
-            return None
-        try:
-            core_img = CoreImage(path)
-            if core_img and core_img.texture:
-                texture = core_img.texture
-                texture.mag_filter = 'nearest'
-                texture.min_filter = 'nearest'
-                self.textures[source_file] = texture 
-                return texture
-        except Exception as e:
-            print(f"Error Loading Image: {e}")
-        return None
+        step = self.move_speed * dt
+        player = self.ids.player_character
 
-    def get_sprite_from_sheet(self, source_file, x, y, width, height):
-        """ดึงภาพย่อย (Sprite) จาก Sprite Sheet"""
-        main_texture = self.get_texture(source_file)
-        if main_texture:
-            return main_texture.get_region(x, y, width, height)
-        return None
+        # 1. จำลองพิกัดตำแหน่งใหม่ขึ้นมาก่อน (ยังไม่ขยับจริง)
+        new_x = player.x
+        new_y = player.y
 
-    # --- ระบบวาดแผนที่และตัวละคร ---
-    def draw_map(self):
-        map_widget = self.ids.get('map_widget')
-        if not map_widget or not self.game_state:
-            return
+        # 2. คำนวณทิศทางการเดินตามปุ่มที่กด
+        if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W หรือ Up
+            new_y += step
+        if 115 in self.keys_pressed or 274 in self.keys_pressed:  # S หรือ Down
+            new_y -= step
+        if 97 in self.keys_pressed or 276 in self.keys_pressed:   # A หรือ Left
+            new_x -= step
+        if 100 in self.keys_pressed or 275 in self.keys_pressed:  # D หรือ Right
+            new_x += step
 
-        map_widget.canvas.after.clear()
-        
-        ground_tex = self.get_texture('ground.png')
-        gs = self.game_state
-        
-        tile_size = min(map_widget.width / gs.grid_width, map_widget.height / gs.grid_height)
-        total_map_w = tile_size * gs.grid_width
-        total_map_h = tile_size * gs.grid_height
-        
-        offset_x = map_widget.x + (map_widget.width - total_map_w) / 2
-        offset_y = map_widget.y + (map_widget.height - total_map_h) / 2
+        # ==========================================
+        # 3. ระบบกำแพงกั้นขอบจอ (Boundary Collision)
+        # ==========================================
+        # แกน X: ห้ามทะลุขอบซ้าย (0) และขอบขวา (ความกว้างหน้าจอ - ความกว้างตัวละคร)
+        if new_x < 0:
+            new_x = 0
+        elif new_x > self.width - player.width:
+            new_x = self.width - player.width
 
-        with map_widget.canvas.after:
-            # 1. วาดฉากหลัง
-            if ground_tex:
-                Color(1, 1, 1, 1) 
-                Rectangle(texture=ground_tex, pos=(offset_x, offset_y), size=(total_map_w, total_map_h))
+        # แกน Y: ห้ามทะลุขอบล่าง (0) และขอบบน (ความสูงหน้าจอ - ความสูงตัวละคร)
+        if new_y < 0:
+            new_y = 0
+        elif new_y > self.height - player.height:
+            new_y = self.height - player.height
 
-            # 2. วนลูปวาดกล่องแร่ / ไอเทม
-            for y in range(gs.grid_height):
-                for x in range(gs.grid_width):
-                    tile = gs.get_tile(x, y)
-                    draw_x = offset_x + x * tile_size
-                    draw_y = offset_y + (gs.grid_height - 1 - y) * tile_size
-
-                    if tile:
-                        sprite_coords = {
-                            "stone": (16, 0), "coal": (32, 0), "copper": (48, 0), "iron": (64, 0), 
-                        }
-                        
-                        Color(1, 1, 1, 1)
-                        if tile in sprite_coords:
-                            sx, sy = sprite_coords[tile]
-                            ore_tex = self.get_sprite_from_sheet('details.png', sx, sy, 16, 16)
-                            if ore_tex:
-                                Rectangle(texture=ore_tex, pos=(draw_x + 4, draw_y + 4), size=(tile_size - 8, tile_size - 8))
-                            else:
-                                Color(*ORE_COLORS.get(tile, (1, 1, 1, 1)))
-                                Rectangle(pos=(draw_x + 4, draw_y + 4), size=(tile_size - 8, tile_size - 8))
-                        else:
-                            Color(*ORE_COLORS.get(tile, (1, 1, 1, 1)))
-                            Rectangle(pos=(draw_x + 4, draw_y + 4), size=(tile_size - 8, tile_size - 8))
-
-            # 3. วาดตัวละคร (Player) ทับชั้นบนสุด และเก็บไว้ขยับ
-            player_draw_x = offset_x + self.player_x * tile_size
-            player_draw_y = offset_y + (gs.grid_height - 1 - self.player_y) * tile_size
-            
-            # ทดลองดึงรูปตัวละครจาก Floor.png (แก้พิกัดตรงนี้ได้เลย)
-            player_tex = self.get_sprite_from_sheet('Floor.png', 288, 128, 32, 32)
-            
-            Color(1, 1, 1, 1) 
-            if player_tex:
-                self.player_rect = Rectangle(texture=player_tex, pos=(player_draw_x, player_draw_y), size=(tile_size, tile_size))
-            else:
-                Color(1, 0, 0, 1) # ถ้าหาภาพไม่เจอเป็นกล่องสีแดง
-                self.player_rect = Rectangle(pos=(player_draw_x + 4, player_draw_y + 4), size=(tile_size - 8, tile_size - 8))
-
-    def new_map(self):
-        """สร้าง map ใหม่ (กดปุ่ม New Map)"""
-        if self.game_state:
-            self.game_state.generate_map()
-            self.draw_map()
+        # 4. สั่งให้ตัวละครขยับไปที่พิกัดใหม่ที่ผ่านการเช็กกำแพงแล้ว
+        player.x = new_x
+        player.y = new_y
                 
 # =============================================
 # แอปหลัก (Main App)
@@ -239,6 +114,7 @@ class MinusOnMineApp(App):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name='menu'))
         sm.add_widget(MiningScreen(name='mining'))
+        sm.add_widget(MapScreen(name='map'))
         return sm
 
 
