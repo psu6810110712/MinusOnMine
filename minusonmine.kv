@@ -55,7 +55,7 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.18, 0.8, 0.44, 1
             color: 1, 1, 1, 1
-            on_press: root.manager.current = 'mining'
+            on_press: root.manager.current = 'map'
 
         # เพิ่มปุ่มตั้งค่า (Settings)
         Button:
@@ -78,6 +78,7 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.8, 0.2, 0.2, 1
             on_press: app.stop() # คำสั่งปิดแอป Kivy
+
 
         # ช่องว่างด้านล่าง
         Widget:
@@ -120,4 +121,45 @@
             size_hint_x: 400
             size_hint_y: 0
             pos_hint: {'center_x': 0.5}
+            on_press: root.manager.current = 'menu'
+# =============================================
+# สร้างหน้าตาของตัวละคร (Player)
+# =============================================
+<PlayerWidget@Widget>:
+    size_hint: None, None
+    size: 50, 50
+    canvas:
+        Color:
+            rgba: 0.2, 0.6, 1, 1  # สีฟ้า (เดี๋ยวเราค่อยเปลี่ยนเป็นรูปภาพทีหลังได้)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+# =============================================
+# หน้าแผนที่ขุดแร่ (MapScreen)
+# =============================================
+<MapScreen>:
+    FloatLayout:
+        # พื้นหลังแผนที่สีน้ำตาลดิน
+        canvas.before:
+            Color:
+                rgba: 0.25, 0.2, 0.15, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # เรียกใช้ตัวละครที่เราสร้างไว้ด้านบน
+        PlayerWidget:
+            id: player_character
+            # กำหนดให้อยู่ตรงกลางจอตอนเริ่ม
+            pos: root.width / 2, root.height / 2
+
+        # ปุ่มกลับเมนู (วางไว้มุมขวาบน)
+        Button:
+            text: 'Back to Menu'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.98}
+            background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
