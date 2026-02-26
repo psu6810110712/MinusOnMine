@@ -66,7 +66,6 @@
             size: 400, 65
             pos_hint: {'center_x': 0.5}
             background_color: 0.3, 0.3, 0.3, 1
-            #on_press: root.manager.current = 'settings' # รอสร้างหน้า Settings
 
         # เพิ่มปุ่มออกจากเกม (Exit)
         Button:
@@ -86,7 +85,7 @@
 
         # เวอร์ชัน
         Label:
-            text: 'v0.1.0'
+            text: 'v0.2.0'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
             font_size: '12sp'
             color: 0.4, 0.4, 0.5, 1
@@ -94,34 +93,43 @@
 
 
 # =============================================
-# หน้าขุดแร่ (MiningScreen) - โครงเปล่า
+# หน้าแผนที่ขุดแร่ (MapScreen)
 # =============================================
-<MiningScreen>:
-    BoxLayout:
-        orientation: 'vertical'
+<MapScreen>:
+    FloatLayout:
+        # ===== 1. เลเยอร์ของโลก (World Layer) =====
+        # เราจะกำหนดให้โลกใหญ่กว่าหน้าจอมากๆ (เช่น 2400x2400)
+        RelativeLayout:
+            id: world_layer
+            size_hint: None, None
+            size: 2400, 2400  #ปรับความใหญ่ของแมพตรงนี้
 
-        canvas.before:
-            Color:
-                rgba: 0.15, 0.13, 0.1, 1
-            Rectangle:
-                pos: self.pos
-                size: self.size
+            # พื้นหลังแผนที่รูปภาพ
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1 
+                Rectangle:
+                    pos: 0, 0
+                    size: self.size
+                    source: 'ground.png' 
 
-        Label:
-            text: 'Mining Screen - Coming Soon'
-            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-            font_size: '25sp'
-            color: 1, 0.84, 0, 1
+            # ตัวละคร (ให้อยู่ข้างใน World)
+            PlayerWidget:
+                id: player_character
+                pos: 1000, 800 # ให้เริ่มเกิดที่พี่กัดนี้
 
+        # ===== 2. UI บนหน้าจอ =====
+        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
         Button:
             text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-            font_size: '22sp'
-            size_hint: 0.4, 0.08
-            size_hint_x: 400
-            size_hint_y: 0
-            pos_hint: {'center_x': 0.5}
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.98}
+            background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
+
+
 # =============================================
 # สร้างหน้าตาของตัวละคร (Player)
 # =============================================
@@ -135,31 +143,4 @@
             pos: self.pos
             size: self.size
 
-# =============================================
-# หน้าแผนที่ขุดแร่ (MapScreen)
-# =============================================
-<MapScreen>:
-    FloatLayout:
-        # พื้นหลังแผนที่สีน้ำตาลดิน
-        canvas.before:
-            Color:
-                rgba: 0.25, 0.2, 0.15, 1
-            Rectangle:
-                pos: self.pos
-                size: self.size
 
-        # เรียกใช้ตัวละครที่เราสร้างไว้ด้านบน
-        PlayerWidget:
-            id: player_character
-            # กำหนดให้อยู่ตรงกลางจอตอนเริ่ม
-            pos: root.width / 2, root.height / 2
-
-        # ปุ่มกลับเมนู (วางไว้มุมขวาบน)
-        Button:
-            text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.98}
-            background_color: 0.8, 0.2, 0.2, 1
-            on_press: root.manager.current = 'menu'
