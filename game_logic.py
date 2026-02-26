@@ -20,8 +20,8 @@ class GameState:
         """สุ่มวางแร่บน grid ตาม weight ใน ORES"""
         # สร้าง list ของแร่ทั้งหมดพร้อม weight
         ore_pool = []
-        for ore_key, ore_info in ORES.items():
-            ore_pool.append((ore_key, ore_info["weight"]))
+        for ore_id, ore_obj in ORES.items():
+            ore_pool.append((ore_id, ore_obj.weight))  # เข้าถึง object.weight แทน dict["weight"]
 
         self.grid_map = []
         for y in range(self.grid_height):
