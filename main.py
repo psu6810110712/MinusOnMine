@@ -5,7 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.window import Window  # ดึงระบบหน้าต่างมาจับคีย์บอร์ด
 from kivy.clock import Clock
 import random
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Ellipse, Line
 from game_data import ORES, UITheme
 
 # =============================================
@@ -35,15 +35,6 @@ class MapScreen(Screen):
         self.tile_size = 50     # ขนาดของบล็อกแต่ละช่อง (ให้พอๆ กับตัวละคร)
         self.grid_w = 16        # จำนวนช่องแนวนอน
         self.grid_h = 12        # จำนวนช่องแนวตั้ง
-
-    def on_enter(self):
-        # สร้างและวาดแมพทันทีที่เข้ามาในหน้านี้
-        self.generate_map()
-        self.draw_map()
-        
-        Window.bind(on_key_down=self.on_keyboard_down)
-        Window.bind(on_key_up=self.on_keyboard_up)
-        self.game_loop = Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     def on_enter(self):
         """ฟังก์ชันนี้จะทำงานอัตโนมัติเมื่อเข้ามาที่หน้านี้"""
@@ -115,44 +106,55 @@ class MapScreen(Screen):
         world.x = (self.width / 2) - player.x - (player.width / 2)
         world.y = (self.height / 2) - player.y - (player.height / 2)
 
-    # ==========================================
-    # ระบบแผนที่อย่างง่าย (Simple Map System)
-    # ==========================================
-    def generate_map(self):
-        """สุ่มสร้างข้อมูลแผนที่ (0 = ดิน, 1 = หินแร่)"""
-        self.map_data = []
-        for y in range(self.grid_h):
-            row = []
-            for x in range(self.grid_w):
-                # สุ่มโอกาส 20% ที่จะเป็นก้อนหิน (1) นอกนั้นเป็นดิน (0)
-                if random.random() < 0.2:
-                    row.append(1)
-                else:
-                    row.append(0)
-            self.map_data.append(row)
+        # วาด minimap ทุกเฟรม (อัปเดตตำแหน่งจุดผู้เล่น)
+        self.draw_minimap()
 
-    def draw_map(self):
-        """วาดแผนที่ลงบน map_layer"""
-        map_layer = self.ids.map_layer
-        map_layer.canvas.clear() # ล้างภาพเก่าทิ้งก่อนวาดใหม่
-        
-        with map_layer.canvas:
-            for y in range(self.grid_h):
-                for x in range(self.grid_w):
-                    tile = self.map_data[y][x]
-                    
-                    # กำหนดสีตามประเภทของช่อง
-                    if tile == 1:
-                        Color(*ORES["stone"].color)  # ใช้สีแร่จาก object
-                    else:
-                        Color(*UITheme().GROUND_COLOR)  # ใช้สีพื้นจาก UITheme
-                        
-                    # คำนวณพิกัด x, y แล้ววาดกล่อง
-                    draw_x = x * self.tile_size
-                    draw_y = y * self.tile_size
-                    
-                    # วาดขนาดเล็กลง 2 พิกเซล เพื่อให้เห็นเส้นขอบตารางชัดๆ
-                    Rectangle(pos=(draw_x, draw_y), size=(self.tile_size - 2, self.tile_size - 2))
+    # ==========================================
+    # ระบบ Minimap (แผนที่ย่อส่วนมุมซ้ายบน)
+    # ==========================================
+    def draw_minimap(self):
+        """วาด minimap แสดงภาพแผนที่ย่อส่วน + ตำแหน่งผู้เล่น"""
+        minimap = self.ids.minimap_widget
+        player = self.ids.player_character
+        world = self.ids.world_layer
+
+        # ขนาดพื้นที่วาดได้จริง (หักขอบ 4px)
+        padding = 4
+        map_draw_w = minimap.width - padding * 2
+        map_draw_h = minimap.height - padding * 2
+
+        # สเกล: โลก (2400x2400) → minimap (156x156)
+        scale_x = map_draw_w / world.width
+        scale_y = map_draw_h / world.height
+
+        # จุดเริ่มต้นวาด
+        base_x = minimap.x + padding
+        base_y = minimap.y + padding
+
+        minimap.canvas.after.clear()
+        with minimap.canvas.after:
+            # 1. วาดภาพ ground.png ย่อส่วนลงใน minimap
+            Color(1, 1, 1, 1)
+            Rectangle(pos=(base_x, base_y), size=(map_draw_w, map_draw_h),
+                      source='ground.png')
+
+            # 2. วาดกรอบแสดงพื้นที่กล้อง (สี่เหลี่ยมขาว)
+            cam_x = base_x + (-world.x) * scale_x
+            cam_y = base_y + (-world.y) * scale_y
+            cam_w = self.width * scale_x
+            cam_h = self.height * scale_y
+
+            Color(1, 1, 1, 0.8)
+            Line(rectangle=(cam_x, cam_y, cam_w, cam_h), width=1.2)
+
+            # 3. วาดจุดแสดงตำแหน่งผู้เล่น (วงกลมแดง)
+            player_mx = base_x + player.x * scale_x
+            player_my = base_y + player.y * scale_y
+            dot_size = 6
+
+            Color(1, 0.2, 0.2, 1)
+            Ellipse(pos=(player_mx - dot_size / 2, player_my - dot_size / 2),
+                    size=(dot_size, dot_size))
 
 # =============================================
 # แอปหลัก (Main App)

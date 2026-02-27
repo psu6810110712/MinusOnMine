@@ -116,7 +116,7 @@
             # ตัวละคร (ให้อยู่ข้างใน World)
             PlayerWidget:
                 id: player_character
-                pos: 1000, 800 # ให้เริ่มเกิดที่พี่กัดนี้
+                pos: 1000, 800 # ให้เริ่มเกิดที่พิกัดนี้
 
         # ===== 2. UI บนหน้าจอ =====
         # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
@@ -128,6 +128,27 @@
             pos_hint: {'right': 0.98, 'top': 0.98}
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
+
+        # ===== 3. Minimap (ซ้ายบน) =====
+        Widget:
+            id: minimap_widget
+            size_hint: None, None
+            size: 164, 164
+            pos_hint: {'x': 0.01, 'top': 0.98}
+            # พื้นหลัง minimap
+            canvas.before:
+                # กรอบนอก (ขอบสีขาว)
+                Color:
+                    rgba: 0.8, 0.8, 0.8, 0.6
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                # พื้นหลังดำ
+                Color:
+                    rgba: 0.05, 0.05, 0.08, 0.85
+                Rectangle:
+                    pos: self.x + 2, self.y + 2
+                    size: self.width - 4, self.height - 4
 
 
 # =============================================
