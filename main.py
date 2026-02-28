@@ -1,107 +1,194 @@
-# main.py - ไฟล์หลักสำหรับรันแอป MinusOnMine
-# Idle Mining Game สร้างด้วย Kivy Framework
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.core.window import Window  # ดึงระบบหน้าต่างมาจับคีย์บอร์ด
 from kivy.clock import Clock
-import random
-from kivy.graphics import Color, Rectangle, Ellipse, Line
+from kivy.core.window import Window
+from kivy.graphics import Color, Ellipse, Line, Rectangle
+from kivy.properties import NumericProperty, StringProperty
+from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
-from kivy.properties import StringProperty
-from game_data import ORES  # ดึงมาจากไฟล์ game_data.py
 
-# =============================================
-# คลาสตัวละคร (Player) และระบบแอนิเมชัน
-# =============================================
 
 class PlayerWidget(Widget):
-    # ตั้งค่าภาพเริ่มต้นเป็นท่ายืนหันลงหน้าจอ (ไฟล์ 1.png ของโฟลเดอร์ down)
-    image_source = StringProperty('assets/sprites/player/movement/down/1.png')
+    image_source = StringProperty("assets/sprites/player/movement/down/1.png")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        # ใช้ Dictionary เก็บ path ของภาพทั้ง 4 ทิศทาง ทิศละ 9 เฟรม
         self.frames = {
-            'up': [f'assets/sprites/player/movement/up/{i}.png' for i in range(1, 10)],
-            'down': [f'assets/sprites/player/movement/down/{i}.png' for i in range(1, 10)],
-            'left': [f'assets/sprites/player/movement/left/{i}.png' for i in range(1, 10)],
-            'right': [f'assets/sprites/player/movement/right/{i}.png' for i in range(1, 10)]
+            "up": [f"assets/sprites/player/movement/up/{i}.png" for i in range(1, 10)],
+            "down": [f"assets/sprites/player/movement/down/{i}.png" for i in range(1, 10)],
+            "left": [f"assets/sprites/player/movement/left/{i}.png" for i in range(1, 10)],
+            "right": [f"assets/sprites/player/movement/right/{i}.png" for i in range(1, 10)],
         }
-        
         self.current_frame = 0
         self.is_moving = False
-        self.direction = 'down'  # เริ่มต้นหันหน้าลง
-        
-        self.anim_timer = 0
-        self.anim_speed = 0.08  # ปรับให้เร็วขึ้นนิดนึงเพราะมีตั้ง 9 เฟรม (ลองปรับลด/เพิ่มความเร็วตรงนี้ได้ครับ)
+        self.direction = "down"
+        self.anim_timer = 0.0
+        self.anim_speed = 0.08
 
     def update_animation(self, dt):
-        """อัปเดตภาพตัวละครตามสถานะการเดินทั้ง 4 ทิศทาง"""
         if not self.is_moving:
-            # ถ้ายืนเฉยๆ ให้กลับไปภาพแรก (ท่ายืน) ของทิศทางที่กำลังหันอยู่
             self.current_frame = 0
             self.image_source = self.frames[self.direction][0]
             return
 
-        # ถ้ากำลังเดิน ให้นับเวลาเพื่อเปลี่ยนเฟรม
         self.anim_timer += dt
         if self.anim_timer >= self.anim_speed:
-            self.anim_timer = 0
-            # วนลูปเฟรม 0 ถึง 8 (เพราะมี 9 ภาพ)
+            self.anim_timer = 0.0
             self.current_frame = (self.current_frame + 1) % 9
-            
-            # อัปเดตภาพตามทิศทางปัจจุบัน
             self.image_source = self.frames[self.direction][self.current_frame]
 
-# =============================================
-# หน้าจอต่างๆ (Screens)
-# =============================================
+
+class CameraController:
+    def __init__(self, zoom=1.0):
+        self.zoom = max(1.0, float(zoom))
+        self.offset_x = 0.0
+        self.offset_y = 0.0
+
+    def update(self, player_pos, player_size, viewport_size, world_size):
+        player_x, player_y = player_pos
+        player_w, player_h = player_size
+        view_w, view_h = viewport_size
+        world_w, world_h = world_size
+
+        player_cx = player_x + (player_w / 2.0)
+        player_cy = player_y + (player_h / 2.0)
+        target_x = (view_w / 2.0) - (player_cx * self.zoom)
+        target_y = (view_h / 2.0) - (player_cy * self.zoom)
+
+        scaled_world_w = world_w * self.zoom
+        scaled_world_h = world_h * self.zoom
+
+        if scaled_world_w <= view_w:
+            self.offset_x = (view_w - scaled_world_w) / 2.0
+        else:
+            min_x = view_w - scaled_world_w
+            self.offset_x = min(0.0, max(min_x, target_x))
+
+        if scaled_world_h <= view_h:
+            self.offset_y = (view_h - scaled_world_h) / 2.0
+        else:
+            min_y = view_h - scaled_world_h
+            self.offset_y = min(0.0, max(min_y, target_y))
+
+        return self.offset_x, self.offset_y
+
+    def visible_world_rect(self, viewport_size, world_size):
+        view_w, view_h = viewport_size
+        world_w, world_h = world_size
+
+        visible_w = view_w / self.zoom
+        visible_h = view_h / self.zoom
+
+        if world_w <= visible_w:
+            cam_x = 0.0
+            cam_w = world_w
+        else:
+            cam_x = -self.offset_x / self.zoom
+            cam_x = min(world_w - visible_w, max(0.0, cam_x))
+            cam_w = visible_w
+
+        if world_h <= visible_h:
+            cam_y = 0.0
+            cam_h = world_h
+        else:
+            cam_y = -self.offset_y / self.zoom
+            cam_y = min(world_h - visible_h, max(0.0, cam_y))
+            cam_h = visible_h
+
+        return cam_x, cam_y, cam_w, cam_h
+
+
+class MinimapRenderer:
+    def __init__(self, padding=4, line_width=1.2, min_dot=6, max_dot=12):
+        self.padding = padding
+        self.line_width = line_width
+        self.min_dot = min_dot
+        self.max_dot = max_dot
+
+    def draw(self, widget, world_size, camera_rect, player_pos, background_source):
+        world_w, world_h = world_size
+        cam_x, cam_y, cam_w, cam_h = camera_rect
+        player_x, player_y = player_pos
+
+        map_draw_w = max(1, widget.width - self.padding * 2)
+        map_draw_h = max(1, widget.height - self.padding * 2)
+        base_x = widget.x + self.padding
+        base_y = widget.y + self.padding
+
+        scale_x = map_draw_w / world_w
+        scale_y = map_draw_h / world_h
+
+        widget.canvas.after.clear()
+        with widget.canvas.after:
+            Color(1, 1, 1, 1)
+            Rectangle(pos=(base_x, base_y), size=(map_draw_w, map_draw_h), source=background_source)
+
+            cam_mx = base_x + (cam_x * scale_x)
+            cam_my = base_y + (cam_y * scale_y)
+            cam_mw = min(map_draw_w, cam_w * scale_x)
+            cam_mh = min(map_draw_h, cam_h * scale_y)
+
+            cam_mx = min(base_x + map_draw_w - cam_mw, max(base_x, cam_mx))
+            cam_my = min(base_y + map_draw_h - cam_mh, max(base_y, cam_my))
+
+            Color(1, 1, 1, 0.8)
+            Line(rectangle=(cam_mx, cam_my, cam_mw, cam_mh), width=self.line_width)
+
+            player_mx = base_x + (player_x * scale_x)
+            player_my = base_y + (player_y * scale_y)
+            dot_size = max(self.min_dot, min(self.max_dot, map_draw_w * 0.03))
+
+            Color(1, 0.2, 0.2, 1)
+            Ellipse(
+                pos=(player_mx - dot_size / 2, player_my - dot_size / 2),
+                size=(dot_size, dot_size),
+            )
+
 
 class MenuScreen(Screen):
-    """หน้าเมนูหลัก - แสดงชื่อเกมและปุ่มเริ่มเล่น"""
     pass
 
+
 class MiningScreen(Screen):
-    """หน้าขุดแร่ (Mining) - แสดง Grid Map"""
     def new_map(self):
-        """สร้าง Map ใหม่"""
         pass
 
+
 class MapScreen(Screen):
-    """หน้าจอแผนที่สำหรับเดินสำรวจ"""
+    camera_zoom = NumericProperty(1.0)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.keys_pressed = set()
-        self.move_speed = 300
-        
-        # --- ตัวแปรสำหรับแผนที่ ---
-        self.map_data = []      # เก็บข้อมูลแผนที่เป็น 2D Array
-        self.tile_size = 50     # ขนาดของบล็อกแต่ละช่อง (ให้พอๆ กับตัวละคร)
-        self.grid_w = 16        # จำนวนช่องแนวนอน
-        self.grid_h = 12        # จำนวนช่องแนวตั้ง
+        self.move_speed = 200
+        self.camera = CameraController(zoom=self.camera_zoom)
+        self.minimap_renderer = MinimapRenderer()
+        self.bind(camera_zoom=self.on_camera_zoom)
 
     def on_enter(self):
-        """ฟังก์ชันนี้จะทำงานอัตโนมัติเมื่อเข้ามาที่หน้านี้"""
+        player = self.ids.player_character
+        world = self.ids.world_layer
+        player.x = (world.width - player.width) / 2.0
+        player.y = (world.height - player.height) / 2.0
+
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
         self.game_loop = Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     def on_leave(self):
-        """ฟังก์ชันนี้จะทำงานอัตโนมัติเมื่อออกจากหน้านี้"""
         Window.unbind(on_key_down=self.on_keyboard_down)
         Window.unbind(on_key_up=self.on_keyboard_up)
-        self.game_loop.cancel()
+        if hasattr(self, "game_loop"):
+            self.game_loop.cancel()
         self.keys_pressed.clear()
 
-    def on_keyboard_down(self, window, key, scancode, codepoint, modifiers):
-        """บันทึกรหัสปุ่ม (เป็นตัวเลข) ที่ถูกกด"""
+    def on_camera_zoom(self, _instance, value):
+        self.camera.zoom = max(1.0, float(value))
+
+    def on_keyboard_down(self, _window, key, _scancode, _codepoint, _modifiers):
         self.keys_pressed.add(key)
 
-    def on_keyboard_up(self, window, key, scancode):
-        """ลบรหัสปุ่มออกเมื่อปล่อยนิ้ว"""
-        if key in self.keys_pressed:
-            self.keys_pressed.remove(key)
+    def on_keyboard_up(self, _window, key, _scancode):
+        self.keys_pressed.discard(key)
 
     def update(self, dt):
         step = self.move_speed * dt
@@ -110,42 +197,29 @@ class MapScreen(Screen):
 
         new_x = player.x
         new_y = player.y
-
-        # ตัวแปรเช็คว่ารอบนี้มีการเดินหรือไม่
         is_moving_now = False
 
-        # คำนวณทิศทางการเดินตามปุ่มที่กด พร้อมกำหนดทิศทางให้ตัวละคร
-        if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W หรือ Up
+        if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W or Up
             new_y += step
-            player.direction = 'up'
+            player.direction = "up"
             is_moving_now = True
-        elif 115 in self.keys_pressed or 274 in self.keys_pressed:  # S หรือ Down
+        elif 115 in self.keys_pressed or 274 in self.keys_pressed:  # S or Down
             new_y -= step
-            player.direction = 'down'
+            player.direction = "down"
             is_moving_now = True
-            
-        if 97 in self.keys_pressed or 276 in self.keys_pressed:   # A หรือ Left
+
+        if 97 in self.keys_pressed or 276 in self.keys_pressed:  # A or Left
             new_x -= step
-            player.direction = 'left'
+            player.direction = "left"
             is_moving_now = True
-        elif 100 in self.keys_pressed or 275 in self.keys_pressed:  # D หรือ Right
+        elif 100 in self.keys_pressed or 275 in self.keys_pressed:  # D or Right
             new_x += step
-            player.direction = 'right'
+            player.direction = "right"
             is_moving_now = True
 
-        # อัปเดตสถานะแอนิเมชันให้ตัวละคร
         player.is_moving = is_moving_now
         player.update_animation(dt)
 
-        # ... (โค้ดด้านล่างเรื่องขอบโลกและกล้อง เหมือนเดิมเลยครับ) ...
-
-        # อัปเดตสถานะแอนิเมชันให้ตัวละคร
-        player.is_moving = is_moving_now
-        player.update_animation(dt)
-
-        # ==========================================
-        # ระบบกำแพงกั้นขอบโลก (Boundary Collision)
-        # ==========================================
         if new_x < 0:
             new_x = 0
         elif new_x > world.width - player.width:
@@ -156,72 +230,37 @@ class MapScreen(Screen):
         elif new_y > world.height - player.height:
             new_y = world.height - player.height
 
-        # สั่งให้ตัวละครขยับ
         player.x = new_x
         player.y = new_y
 
-        # ==========================================
-        # ระบบกล้อง (Camera Follow)
-        # ==========================================
-        world.x = (self.width / 2) - player.x - (player.width / 2)
-        world.y = (self.height / 2) - player.y - (player.height / 2)
+        world.x, world.y = self.camera.update(
+            player_pos=(player.x, player.y),
+            player_size=(player.width, player.height),
+            viewport_size=(self.width, self.height),
+            world_size=(world.width, world.height),
+        )
 
-        # วาด minimap ทุกเฟรม
-        self.draw_minimap()
+        camera_rect = self.camera.visible_world_rect(
+            viewport_size=(self.width, self.height),
+            world_size=(world.width, world.height),
+        )
+        self.minimap_renderer.draw(
+            widget=self.ids.minimap_widget,
+            world_size=(world.width, world.height),
+            camera_rect=camera_rect,
+            player_pos=(player.x + player.width / 2.0, player.y + player.height / 2.0),
+            background_source="ground.png",
+        )
 
-    def draw_minimap(self):
-        """วาด minimap แสดงภาพแผนที่ย่อส่วน + ตำแหน่งผู้เล่น"""
-        # โค้ดส่วนนี้เหมือนเดิมที่คุณเพิ่งเขียนมาครับ
-        minimap = self.ids.minimap_widget
-        player = self.ids.player_character
-        world = self.ids.world_layer
-
-        padding = 4
-        map_draw_w = minimap.width - padding * 2
-        map_draw_h = minimap.height - padding * 2
-
-        scale_x = map_draw_w / world.width
-        scale_y = map_draw_h / world.height
-
-        base_x = minimap.x + padding
-        base_y = minimap.y + padding
-
-        minimap.canvas.after.clear()
-        with minimap.canvas.after:
-            Color(1, 1, 1, 1)
-            Rectangle(pos=(base_x, base_y), size=(map_draw_w, map_draw_h),
-                      source='ground.png')
-
-            cam_x = base_x + (-world.x) * scale_x
-            cam_y = base_y + (-world.y) * scale_y
-            cam_w = self.width * scale_x
-            cam_h = self.height * scale_y
-
-            Color(1, 1, 1, 0.8)
-            Line(rectangle=(cam_x, cam_y, cam_w, cam_h), width=1.2)
-
-            player_mx = base_x + player.x * scale_x
-            player_my = base_y + player.y * scale_y
-            dot_size = 6
-
-            Color(1, 0.2, 0.2, 1)
-            Ellipse(pos=(player_mx - dot_size / 2, player_my - dot_size / 2),
-                    size=(dot_size, dot_size))
-
-# =============================================
-# แอปหลัก (Main App)
-# =============================================
 
 class MinusOnMineApp(App):
-    """แอปพลิเคชันหลักของเกม MinusOnMine"""
-
     def build(self):
         sm = ScreenManager()
-        sm.add_widget(MenuScreen(name='menu'))
-        sm.add_widget(MiningScreen(name='mining'))
-        sm.add_widget(MapScreen(name='map'))
+        sm.add_widget(MenuScreen(name="menu"))
+        sm.add_widget(MiningScreen(name="mining"))
+        sm.add_widget(MapScreen(name="map"))
         return sm
 
-# รันแอป
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     MinusOnMineApp().run()
