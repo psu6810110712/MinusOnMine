@@ -154,14 +154,15 @@
 # =============================================
 # สร้างหน้าตาของตัวละคร (Player)
 # =============================================
-<PlayerWidget@Widget>:
+<PlayerWidget>:
     size_hint: None, None
-    size: 50, 50
+    size: 100, 100
     canvas:
         Color:
-            rgba: 0.2, 0.6, 1, 1  # สีฟ้า (เดี๋ยวเราค่อยเปลี่ยนเป็นรูปภาพทีหลังได้)
+            rgba: 1, 1, 1, 1 
         Rectangle:
             pos: self.pos
             size: self.size
+            source: root.image_source
 
 
