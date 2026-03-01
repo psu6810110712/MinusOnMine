@@ -6,6 +6,9 @@ from kivy.properties import NumericProperty, StringProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
 
+from game_logic import GameState
+from game_data import ORES
+
 
 class PlayerWidget(Widget):
     image_source = StringProperty("assets/sprites/player/movement/down/1.png")
@@ -35,6 +38,33 @@ class PlayerWidget(Widget):
             self.anim_timer = 0.0
             self.current_frame = (self.current_frame + 1) % 9
             self.image_source = self.frames[self.direction][self.current_frame]
+
+
+class OreBlock(Widget):
+    """Widget representing a single minable ore block on the map."""
+    def __init__(self, grid_x, grid_y, ore_type, **kwargs):
+        super().__init__(**kwargs)
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.ore_type = ore_type
+        
+        # Determine color from game_data
+        ore_data = ORES.get(self.ore_type)
+        self.color = ore_data.color if ore_data else (1, 1, 1, 1)
+
+        self.size_hint = (None, None)
+        self.size = (120, 120)  # Fixed size matching grid
+        self.pos = (self.grid_x * 120, self.grid_y * 120)
+
+        with self.canvas:
+            Color(*self.color)
+            # Make it slightly smaller than 120 so there's a visible grid gap
+            self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110))
+
+    def mine(self):
+        """Called when the block is mined. Removes itself from the parent."""
+        if self.parent:
+            self.parent.remove_widget(self)
 
 
 class CameraController:
@@ -162,6 +192,8 @@ class MapScreen(Screen):
         self.move_speed = 200
         self.camera = CameraController(zoom=self.camera_zoom)
         self.minimap_renderer = MinimapRenderer()
+        self.game_state = GameState()
+        self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
 
     def on_enter(self):
@@ -170,9 +202,31 @@ class MapScreen(Screen):
         player.x = (world.width - player.width) / 2.0
         player.y = (world.height - player.height) / 2.0
 
+        self.render_initial_map()
+
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
         self.game_loop = Clock.schedule_interval(self.update, 1.0 / 60.0)
+
+    def render_initial_map(self):
+        """Draws the ore blocks on the world layer based on game_state.grid_map"""
+        world = self.ids.world_layer
+        
+        # Clear existing blocks if we re-enter the screen
+        for block in self.ore_blocks_dict.values():
+            if block.parent:
+                block.parent.remove_widget(block)
+        self.ore_blocks_dict.clear()
+
+        # Iterate through the grid and instantiate OreBlocks
+        for y, row in enumerate(self.game_state.grid_map):
+            for x, cell in enumerate(row):
+                if cell is not None:  # There is an ore here
+                    block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                    self.ore_blocks_dict[(x, y)] = block
+                    # Add to world layer. We add it but want player to render on top
+                    # so we insert at the back of the widget tree (index > player index)
+                    world.add_widget(block, index=len(world.children))
 
     def on_leave(self):
         Window.unbind(on_key_down=self.on_keyboard_down)
@@ -186,6 +240,57 @@ class MapScreen(Screen):
 
     def on_keyboard_down(self, _window, key, _scancode, _codepoint, _modifiers):
         self.keys_pressed.add(key)
+        
+        # Handle 'E' key for mining (key code 101 or the actual character 'e')
+        if key == 101 or _codepoint == 'e':
+            self.mine_action()
+
+    def mine_action(self):
+        player = self.ids.player_character
+        
+        # 1. Determine the target coordinate based on player center and direction
+        player_cx = player.x + (player.width / 2.0)
+        player_cy = player.y + (player.height / 2.0)
+        
+        target_x = player_cx
+        target_y = player_cy
+        
+        # Grid tiles are 120x120. Offset by 80 to "reach" into the next tile
+        reach_distance = 80
+        if player.direction == "up":
+            target_y += reach_distance
+        elif player.direction == "down":
+            target_y -= reach_distance
+        elif player.direction == "left":
+            target_x -= reach_distance
+        elif player.direction == "right":
+            target_x += reach_distance
+            
+        # 2. Convert target pixel coordinates to grid coordinates
+        grid_x = int(target_x / 120)
+        grid_y = int(target_y / 120)
+        
+        # Check boundaries
+        if 0 <= grid_x < self.game_state.grid_width and 0 <= grid_y < self.game_state.grid_height:
+            # 3. Check if there is a block there
+            if (grid_x, grid_y) in self.ore_blocks_dict:
+                block = self.ore_blocks_dict[(grid_x, grid_y)]
+                ore_type = block.ore_type
+                
+                # Update visual
+                block.mine()
+                del self.ore_blocks_dict[(grid_x, grid_y)]
+                
+                # Update GameState backend
+                self.game_state.grid_map[grid_y][grid_x] = None
+                
+                # Add to inventory
+                if ore_type in self.game_state.inventory:
+                    self.game_state.inventory[ore_type] += 1
+                else:
+                    self.game_state.inventory[ore_type] = 1
+                    
+                print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Inventory: {self.game_state.inventory}")
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)

@@ -85,7 +85,7 @@
 
         # เวอร์ชัน
         Label:
-            text: 'v0.2.0'
+            text: 'v0.2.1'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
             font_size: '12sp'
             color: 0.4, 0.4, 0.5, 1
@@ -119,6 +119,16 @@
                 pos: 1000, 800 # ให้เริ่มเกิดที่พิกัดนี้
 
         # ===== 2. UI บนหน้าจอ =====
+        # เวอร์ชันมุมซ้ายล่าง
+        Label:
+            text: 'v0.2.1'
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '14sp'
+            color: 1, 1, 1, 0.8
+            size_hint: None, None
+            size: 100, 30
+            pos_hint: {'x': 0.01, 'y': 0.01}
+
         # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
         Button:
             text: 'Back to Menu'
