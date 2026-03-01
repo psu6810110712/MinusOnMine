@@ -2,13 +2,19 @@ from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Ellipse, Line, Rectangle
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
+from kivy.animation import Animation
+
+from game_logic import GameState
+from game_data import ORES
 
 
 class PlayerWidget(Widget):
     image_source = StringProperty("assets/sprites/player/movement/down/1.png")
+    render_size = ListProperty([100, 100])
+    render_offset = ListProperty([0, 0])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -18,13 +24,82 @@ class PlayerWidget(Widget):
             "left": [f"assets/sprites/player/movement/left/{i}.png" for i in range(1, 10)],
             "right": [f"assets/sprites/player/movement/right/{i}.png" for i in range(1, 10)],
         }
+        self.attack_frames = {
+            "up": [f"assets/sprites/player/attack/up/{i}.png" for i in range(6)],
+            "down": [f"assets/sprites/player/attack/down/{i}.png" for i in range(6)],
+            "left": [f"assets/sprites/player/attack/left/{i}.png" for i in range(6)],
+            "right": [f"assets/sprites/player/attack/right/{i}.png" for i in range(6)],
+        }
+        
+        # Original sprite sizes for the attack animation frames
+        self.attack_frame_sizes = {
+            "down": [(39, 52), (47, 51), (46, 49), (55, 49), (81, 68), (76, 65)],
+            "up": [(39, 48), (47, 48), (45, 48), (58, 49), (79, 67), (77, 64)],
+            "left": [(55, 50), (31, 48), (36, 50), (57, 50), (93, 50), (91, 50)],
+            "right": [(55, 50), (31, 48), (36, 50), (57, 50), (93, 50), (91, 50)]
+        }
+        
+        # Base scale to map original 64x65 walk frame to our 100x100 box
+        # Scale X = 100 / 64 = 1.5625
+        # Scale Y = 100 / 65 = 1.538
+        
         self.current_frame = 0
         self.is_moving = False
+        self.is_mining = False
         self.direction = "down"
+        
+        # Timers
         self.anim_timer = 0.0
         self.anim_speed = 0.08
+        self.mine_timer = 0.0
+        self.mine_speed = 0.05
 
     def update_animation(self, dt):
+        # 1. Handle Mining Animation first (Priority)
+        if self.is_mining:
+            # Get original sprite size for current frame
+            orig_w, orig_h = self.attack_frame_sizes[self.direction][self.current_frame]
+            
+            # Scale it to match the standard 100x100 walk frame (walk frame orig is ~64x65)
+            # We enforce ratio: width * (100/64), height * (100/65)
+            scaled_w = orig_w * 1.5625
+            scaled_h = orig_h * 1.538
+            
+            self.render_size = [scaled_w, scaled_h]
+            
+            # Offset to keep it centered horizontally and anchored at the feet
+            # Center X: (100 - scaled_w) / 2
+            # Offset Y: 0 (keep feet aligned)
+            offset_x = (100 - scaled_w) / 2.0
+            
+            # For some attacks (like swinging up/down), the sprite might extend above or below. 
+            # We align the bottom of the bounding box if the sprite got taller.
+            # Default walk is 65 tall -> scaled to 100. If hit is 68 -> scaled to 104.6.
+            # We subtract the difference to keep coordinates grounded.
+            offset_y = 0.0
+            
+            self.render_offset = [offset_x, offset_y]
+            
+            self.mine_timer += dt
+            if self.mine_timer >= self.mine_speed:
+                self.mine_timer = 0.0
+                self.current_frame += 1
+                
+                # Check if animation finished (6 frames: 0 to 5)
+                if self.current_frame > 5:
+                    self.is_mining = False
+                    self.current_frame = 0
+                    self.image_source = self.frames[self.direction][0]  # Back to idle
+                    self.render_size = [100, 100]
+                    self.render_offset = [0, 0]
+                else:
+                    self.image_source = self.attack_frames[self.direction][self.current_frame]
+            return
+
+        self.render_size = [100, 100]
+        self.render_offset = [0, 0]
+
+        # 2. Handle Movement Animation
         if not self.is_moving:
             self.current_frame = 0
             self.image_source = self.frames[self.direction][0]
@@ -36,6 +111,110 @@ class PlayerWidget(Widget):
             self.current_frame = (self.current_frame + 1) % 9
             self.image_source = self.frames[self.direction][self.current_frame]
 
+
+class OreBlock(Widget):
+    """Widget representing a single minable ore block on the map."""
+    def __init__(self, grid_x, grid_y, ore_type, **kwargs):
+        super().__init__(**kwargs)
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.ore_type = ore_type
+        
+        # Determine color and image from game_data
+        ore_data = ORES.get(self.ore_type)
+        self.color = (1, 1, 1, 1) # Reset to white to let image pass through
+        self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
+
+        self.size_hint = (None, None)
+        self.size = (120, 120)  # Fixed size matching grid
+        self.pos = (self.grid_x * 120, self.grid_y * 120)
+
+        with self.canvas:
+            Color(*self.color)
+            if self.image_source:
+                # Use image sprite
+                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110), source=self.image_source)
+            else:
+                # Fallback to color tinted box
+                fallback_color = ore_data.color if ore_data else (1, 1, 1, 1)
+                Color(*fallback_color)
+                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110))
+
+    def mine(self):
+        """Called when the block is mined. Removes itself from the parent."""
+        if self.parent:
+            self.parent.remove_widget(self)
+
+
+class ItemDrop(Widget):
+    """Widget representing a dropped item flying towards the player"""
+    def __init__(self, start_pos, target_player, game_state, ore_type, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = (40, 40) # Smaller than a block
+        self.pos = start_pos
+        self.ore_type = ore_type
+        self.game_state = game_state
+        self.target_player = target_player
+
+        ore_data = ORES.get(self.ore_type)
+        self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
+
+        with self.canvas:
+            Color(1, 1, 1, 1)
+            if self.image_source:
+                self.rect = Rectangle(pos=self.pos, size=self.size, source=self.image_source)
+            else:
+                fallback_color = ore_data.color if ore_data else (1, 1, 1, 1)
+                Color(*fallback_color)
+                self.rect = Rectangle(pos=self.pos, size=self.size)
+
+        # Update rect position constantly when moving
+        self.bind(pos=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.rect.pos = self.pos
+
+    def animate_to_player(self):
+        """Starts the animation flying towards the player widget"""
+        target_x = self.target_player.x + (self.target_player.width / 2) - (self.width / 2)
+        target_y = self.target_player.y + (self.target_player.height / 2) - (self.height / 2)
+        
+        anim = Animation(x=target_x, y=target_y, duration=0.4, t='in_out_quad')
+        anim.bind(on_complete=self.on_animation_complete)
+        anim.start(self)
+
+    def on_animation_complete(self, *args):
+        # 1. Add to inventory
+        if self.ore_type in self.game_state.inventory:
+            self.game_state.inventory[self.ore_type] += 1
+        else:
+            self.game_state.inventory[self.ore_type] = 1
+            
+        print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
+        
+        # 2. Delete itself
+        if self.parent:
+            self.parent.remove_widget(self)
+        
+        # 3. Update UI if inventory is open
+        # We can trigger an update by firing an event or just calling a global or parent method
+        # For simplicity, we just check if grandparent is MapScreen (or just let the user toggle to refresh)
+        # We can let the toggle handle the refresh to keep it simple.
+
+
+class InventorySlot(Widget):
+    """A visual slot in the inventory holding an item icon and its count."""
+    item_image = StringProperty("")
+    item_count = StringProperty("0")
+
+    def __init__(self, ore_type, count, **kwargs):
+        super().__init__(**kwargs)
+        self.ore_type = ore_type
+        self.item_count = str(count)
+        
+        ore_data = ORES.get(self.ore_type)
+        self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
 class CameraController:
     def __init__(self, zoom=1.0):
@@ -162,6 +341,8 @@ class MapScreen(Screen):
         self.move_speed = 200
         self.camera = CameraController(zoom=self.camera_zoom)
         self.minimap_renderer = MinimapRenderer()
+        self.game_state = GameState()
+        self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
 
     def on_enter(self):
@@ -170,9 +351,53 @@ class MapScreen(Screen):
         player.x = (world.width - player.width) / 2.0
         player.y = (world.height - player.height) / 2.0
 
+        self.render_initial_map()
+
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
         self.game_loop = Clock.schedule_interval(self.update, 1.0 / 60.0)
+
+    def render_initial_map(self):
+        """Draws the ore blocks on the world layer based on game_state.grid_map"""
+        world = self.ids.world_layer
+        
+        # Clear existing blocks if we re-enter the screen
+        for block in self.ore_blocks_dict.values():
+            if block.parent:
+                block.parent.remove_widget(block)
+        self.ore_blocks_dict.clear()
+
+        # Iterate through the grid and instantiate OreBlocks
+        for y, row in enumerate(self.game_state.grid_map):
+            for x, cell in enumerate(row):
+                if cell is not None:  # There is an ore here
+                    block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                    self.ore_blocks_dict[(x, y)] = block
+                    # Add to world layer. We add it but want player to render on top
+                    # so we insert at the back of the widget tree (index > player index)
+                    world.add_widget(block, index=len(world.children))
+
+    def toggle_inventory(self):
+        overlay = self.ids.inventory_overlay
+        if overlay.disabled:
+             # Open Inventory
+             overlay.opacity = 1
+             overlay.disabled = False
+             self.update_inventory_ui()
+        else:
+             # Close Inventory
+             overlay.opacity = 0
+             overlay.disabled = True
+
+    def update_inventory_ui(self):
+        grid = self.ids.inventory_grid
+        grid.clear_widgets()
+        
+        # Sort inventory by quantity or just iterate
+        for ore_type, count in self.game_state.inventory.items():
+            if count > 0:
+                slot = InventorySlot(ore_type=ore_type, count=count)
+                grid.add_widget(slot)
 
     def on_leave(self):
         Window.unbind(on_key_down=self.on_keyboard_down)
@@ -185,12 +410,105 @@ class MapScreen(Screen):
         self.camera.zoom = max(1.0, float(value))
 
     def on_keyboard_down(self, _window, key, _scancode, _codepoint, _modifiers):
+        # Ignore input if inventory is open, except for closing it
+        overlay = self.ids.inventory_overlay
+        if not overlay.disabled:
+            if _codepoint == 'i' or key == 9: # 'i' or Tab
+                self.toggle_inventory()
+            return
+
         self.keys_pressed.add(key)
+        
+        # Handle 'i' key for inventory toggle
+        if _codepoint == 'i' or key == 9:
+            self.keys_pressed.discard(key) # Don't get stuck moving
+            self.ids.player_character.is_moving = False
+            self.toggle_inventory()
+            return
+            
+        # Handle 'E' key for mining (key code 101 or the actual character 'e')
+        if key == 101 or _codepoint == 'e':
+            player = self.ids.player_character
+            if not player.is_mining:
+                self.mine_action()
+
+    def mine_action(self):
+        player = self.ids.player_character
+        
+        # Trigger animation state
+        player.is_mining = True
+        player.is_moving = False
+        player.current_frame = 0
+        player.mine_timer = 0.0
+        
+        # Pre-set first frame size immediately to prevent single frame flicker
+        orig_w, orig_h = player.attack_frame_sizes[player.direction][0]
+        scaled_w = orig_w * 1.5625
+        scaled_h = orig_h * 1.538
+        player.render_size = [scaled_w, scaled_h]
+        player.render_offset = [(100 - scaled_w) / 2.0, 0]
+        
+        # 1. Determine the target coordinate based on player center and direction
+        player_cx = player.x + (player.width / 2.0)
+        player_cy = player.y + (player.height / 2.0)
+        
+        target_x = player_cx
+        target_y = player_cy
+        
+        # Grid tiles are 120x120. Offset by 80 to "reach" into the next tile
+        reach_distance = 80
+        if player.direction == "up":
+            target_y += reach_distance
+        elif player.direction == "down":
+            target_y -= reach_distance
+        elif player.direction == "left":
+            target_x -= reach_distance
+        elif player.direction == "right":
+            target_x += reach_distance
+            
+        # 2. Convert target pixel coordinates to grid coordinates
+        grid_x = int(target_x / 120)
+        grid_y = int(target_y / 120)
+        
+        # Check boundaries
+        if 0 <= grid_x < self.game_state.grid_width and 0 <= grid_y < self.game_state.grid_height:
+            # 3. Check if there is a block there
+            if (grid_x, grid_y) in self.ore_blocks_dict:
+                block = self.ore_blocks_dict[(grid_x, grid_y)]
+                ore_type = block.ore_type
+                
+                # Update visual
+                block.mine()
+                del self.ore_blocks_dict[(grid_x, grid_y)]
+                
+                # Update GameState backend
+                self.game_state.grid_map[grid_y][grid_x] = None
+                
+                # Add to inventory
+                # We spawn an item drop which handles adding to inventory when animation completes
+                world = self.ids.world_layer
+                drop_x = grid_x * 120 + 40
+                drop_y = grid_y * 120 + 40
+                
+                drop = ItemDrop(
+                    start_pos=(drop_x, drop_y),
+                    target_player=player,
+                    game_state=self.game_state,
+                    ore_type=ore_type
+                )
+                world.add_widget(drop) # Display on top of ground 
+                drop.animate_to_player()
+                
+                print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
 
     def update(self, dt):
+        # Don't update player movement if inventory is open
+        if not self.ids.inventory_overlay.disabled:
+            return
+            
         step = self.move_speed * dt
         player = self.ids.player_character
         world = self.ids.world_layer
@@ -199,23 +517,25 @@ class MapScreen(Screen):
         new_y = player.y
         is_moving_now = False
 
-        if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W or Up
-            new_y += step
-            player.direction = "up"
-            is_moving_now = True
-        elif 115 in self.keys_pressed or 274 in self.keys_pressed:  # S or Down
-            new_y -= step
-            player.direction = "down"
-            is_moving_now = True
+        # Can only move if not currently mining
+        if not player.is_mining:
+            if 119 in self.keys_pressed or 273 in self.keys_pressed:  # W or Up
+                new_y += step
+                player.direction = "up"
+                is_moving_now = True
+            elif 115 in self.keys_pressed or 274 in self.keys_pressed:  # S or Down
+                new_y -= step
+                player.direction = "down"
+                is_moving_now = True
 
-        if 97 in self.keys_pressed or 276 in self.keys_pressed:  # A or Left
-            new_x -= step
-            player.direction = "left"
-            is_moving_now = True
-        elif 100 in self.keys_pressed or 275 in self.keys_pressed:  # D or Right
-            new_x += step
-            player.direction = "right"
-            is_moving_now = True
+            if 97 in self.keys_pressed or 276 in self.keys_pressed:  # A or Left
+                new_x -= step
+                player.direction = "left"
+                is_moving_now = True
+            elif 100 in self.keys_pressed or 275 in self.keys_pressed:  # D or Right
+                new_x += step
+                player.direction = "right"
+                is_moving_now = True
 
         player.is_moving = is_moving_now
         player.update_animation(dt)
