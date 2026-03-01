@@ -171,8 +171,8 @@
         Color:
             rgba: 1, 1, 1, 1 
         Rectangle:
-            pos: self.pos
-            size: self.size
+            pos: self.x + root.render_offset[0], self.y + root.render_offset[1]
+            size: root.render_size
             source: root.image_source
 
 
