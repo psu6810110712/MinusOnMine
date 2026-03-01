@@ -196,6 +196,25 @@ class ItemDrop(Widget):
         # 2. Delete itself
         if self.parent:
             self.parent.remove_widget(self)
+        
+        # 3. Update UI if inventory is open
+        # We can trigger an update by firing an event or just calling a global or parent method
+        # For simplicity, we just check if grandparent is MapScreen (or just let the user toggle to refresh)
+        # We can let the toggle handle the refresh to keep it simple.
+
+
+class InventorySlot(Widget):
+    """A visual slot in the inventory holding an item icon and its count."""
+    item_image = StringProperty("")
+    item_count = StringProperty("0")
+
+    def __init__(self, ore_type, count, **kwargs):
+        super().__init__(**kwargs)
+        self.ore_type = ore_type
+        self.item_count = str(count)
+        
+        ore_data = ORES.get(self.ore_type)
+        self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
 class CameraController:
     def __init__(self, zoom=1.0):
@@ -358,6 +377,28 @@ class MapScreen(Screen):
                     # so we insert at the back of the widget tree (index > player index)
                     world.add_widget(block, index=len(world.children))
 
+    def toggle_inventory(self):
+        overlay = self.ids.inventory_overlay
+        if overlay.disabled:
+             # Open Inventory
+             overlay.opacity = 1
+             overlay.disabled = False
+             self.update_inventory_ui()
+        else:
+             # Close Inventory
+             overlay.opacity = 0
+             overlay.disabled = True
+
+    def update_inventory_ui(self):
+        grid = self.ids.inventory_grid
+        grid.clear_widgets()
+        
+        # Sort inventory by quantity or just iterate
+        for ore_type, count in self.game_state.inventory.items():
+            if count > 0:
+                slot = InventorySlot(ore_type=ore_type, count=count)
+                grid.add_widget(slot)
+
     def on_leave(self):
         Window.unbind(on_key_down=self.on_keyboard_down)
         Window.unbind(on_key_up=self.on_keyboard_up)
@@ -369,8 +410,22 @@ class MapScreen(Screen):
         self.camera.zoom = max(1.0, float(value))
 
     def on_keyboard_down(self, _window, key, _scancode, _codepoint, _modifiers):
+        # Ignore input if inventory is open, except for closing it
+        overlay = self.ids.inventory_overlay
+        if not overlay.disabled:
+            if _codepoint == 'i' or key == 9: # 'i' or Tab
+                self.toggle_inventory()
+            return
+
         self.keys_pressed.add(key)
         
+        # Handle 'i' key for inventory toggle
+        if _codepoint == 'i' or key == 9:
+            self.keys_pressed.discard(key) # Don't get stuck moving
+            self.ids.player_character.is_moving = False
+            self.toggle_inventory()
+            return
+            
         # Handle 'E' key for mining (key code 101 or the actual character 'e')
         if key == 101 or _codepoint == 'e':
             player = self.ids.player_character
@@ -450,6 +505,10 @@ class MapScreen(Screen):
         self.keys_pressed.discard(key)
 
     def update(self, dt):
+        # Don't update player movement if inventory is open
+        if not self.ids.inventory_overlay.disabled:
+            return
+            
         step = self.move_speed * dt
         player = self.ids.player_character
         world = self.ids.world_layer

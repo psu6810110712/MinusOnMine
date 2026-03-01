@@ -85,7 +85,7 @@
 
         # เวอร์ชัน
         Label:
-            text: 'v0.2.1'
+            text: 'v0.2.2'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
             font_size: '12sp'
             color: 0.4, 0.4, 0.5, 1
@@ -129,6 +129,82 @@
             size: 100, 30
             pos_hint: {'x': 0.01, 'y': 0.01}
 
+        # คำแนะนำปุ่มช่องเก็บของ (ตรงกลางล่าง)
+        Label:
+            text: '[ Press I or Tab to open Inventory ]'
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '16sp'
+            color: 1, 0.9, 0.6, 0.9
+            size_hint: None, None
+            size: 300, 40
+            pos_hint: {'center_x': 0.5, 'y': 0.02}
+
+        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
+        Button:
+            text: 'Back to Menu'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.98}
+            background_color: 0.8, 0.2, 0.2, 1
+            on_press: root.manager.current = 'menu'
+
+        # ===== 3. Minimap (ซ้ายบน) =====
+        Widget:
+            id: minimap_widget
+            size_hint: None, None
+            size: 200, 200
+            pos_hint: {'x': 0.01, 'top': 0.98}
+            # พื้นหลัง minimap
+            canvas.before:
+                # กรอบนอก (ขอบสีขาว)
+                Color:
+                    rgba: 0.8, 0.8, 0.8, 0.6
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                # พื้นหลังดำ
+                Color:
+                    rgba: 0.05, 0.05, 0.08, 0.85
+                Rectangle:
+                    pos: self.x + 2, self.y + 2
+                    size: self.width - 4, self.height - 4
+
+        # ===== 4. Inventory Overlay =====
+        BoxLayout:
+            id: inventory_overlay
+            orientation: 'vertical'
+            size_hint: 0.8, 0.8
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            padding: 20
+            spacing: 10
+            # Hide by default
+            opacity: 0
+            disabled: True
+            
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.1, 0.15, 0.9
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    
+            Label:
+                text: 'Inventory'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '32sp'
+                size_hint_y: 0.15
+                
+            ScrollView:
+                size_hint_y: 0.85
+                GridLayout:
+                    id: inventory_grid
+                    cols: 5
+                    padding: 10
+                    spacing: 15
+                    size_hint_y: None
+                    height: self.minimum_height
+        
         # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
         Button:
             text: 'Back to Menu'
@@ -174,5 +250,42 @@
             pos: self.x + root.render_offset[0], self.y + root.render_offset[1]
             size: root.render_size
             source: root.image_source
+
+
+# =============================================
+# ช่องเก็บของ (Inventory Slot)
+# =============================================
+<InventorySlot>:
+    size_hint: None, None
+    size: 80, 80
+    
+    canvas.before:
+        # พื้นหลังช่องใส่ของ
+        Color:
+            rgba: 0.25, 0.25, 0.3, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        # กรอบ
+        Color:
+            rgba: 0.5, 0.5, 0.5, 1
+        Line:
+            rectangle: (self.x, self.y, self.width, self.height)
+            width: 1.5
+
+    # รูปภาพไอเทมตรงกลาง
+    Image:
+        source: root.item_image
+        size: 50, 50
+        pos: root.x + 15, root.y + 20
+
+    # ตัวเลขระบุจำนวนมุมขวาล่าง
+    Label:
+        text: root.item_count
+        font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+        font_size: '16sp'
+        color: 1, 1, 1, 1
+        size: 20, 20
+        pos: root.right - 25, root.y + 5
 
 
