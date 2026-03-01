@@ -59,18 +59,18 @@ class GameConfig:
 # ข้อมูลแร่ 12 ชนิด (เรียงตามความหายาก)
 # =============================================
 ORES: Dict[str, Ore] = {
-    "stone": Ore("stone", "Stone", 1, 100, (0.50, 0.50, 0.50, 1), "assets/sprites/ores/stone.png"),  
-    "coal": Ore("coal", "Coal", 5, 80, (0.20, 0.20, 0.20, 1), "assets/sprites/ores/coal.png"),  
-    "copper": Ore("copper", "Copper", 15, 60, (0.80, 0.50, 0.20, 1), "assets/sprites/ores/copper.png"),  
-    "iron": Ore("iron", "Iron", 30, 40, (0.60, 0.60, 0.70, 1), "assets/sprites/ores/iron.png"),  
-    "gold": Ore("gold", "Gold", 100, 20, (1.00, 0.84, 0.00, 1), "assets/sprites/ores/gold.png"),  
-    "diamond": Ore("diamond", "Diamond", 500, 5, (0.50, 0.90, 1.00, 1), "assets/sprites/ores/diamond.png"),  
-    "emerald": Ore("emerald", "Emerald", 1000, 3, (0.18, 0.80, 0.44, 1), "assets/sprites/ores/emerald.png"),  
-    "ruby": Ore("ruby", "Ruby", 2500, 2, (0.90, 0.11, 0.14, 1), "assets/sprites/ores/ruby.png"),  
-    "sapphire": Ore("sapphire", "Sapphire", 5000, 1, (0.15, 0.30, 0.85, 1), "assets/sprites/ores/sapphire.png"),  
-    "amethyst": Ore("amethyst", "Amethyst", 10000, 0.5, (0.60, 0.30, 0.80, 1), "assets/sprites/ores/amethyst.png"),  
-    "obsidian": Ore("obsidian", "Obsidian", 50000, 0.1, (0.10, 0.05, 0.15, 1), "assets/sprites/ores/obsidian.png"),  
-    "mithril": Ore("mithril", "Mithril", 100000, 0.01, (0.75, 0.90, 1.00, 1), "assets/sprites/ores/mithril.png"),  
+    "stone": Ore("stone", "Stone", 1, 100, (0.50, 0.50, 0.50, 1), "assets/sprites/ores/ore_0.png"),  
+    "coal": Ore("coal", "Coal", 5, 80, (0.20, 0.20, 0.20, 1), "assets/sprites/ores/ore_1.png"),  
+    "copper": Ore("copper", "Copper", 15, 60, (0.80, 0.50, 0.20, 1), "assets/sprites/ores/ore_2.png"),  
+    "iron": Ore("iron", "Iron", 30, 40, (0.60, 0.60, 0.70, 1), "assets/sprites/ores/ore_3.png"),  
+    "gold": Ore("gold", "Gold", 100, 20, (1.00, 0.84, 0.00, 1), "assets/sprites/ores/ore_4.png"),  
+    "diamond": Ore("diamond", "Diamond", 500, 5, (0.50, 0.90, 1.00, 1), "assets/sprites/ores/ore_5.png"),  
+    "emerald": Ore("emerald", "Emerald", 1000, 3, (0.18, 0.80, 0.44, 1), "assets/sprites/ores/ore_6.png"),  
+    "ruby": Ore("ruby", "Ruby", 2500, 2, (0.90, 0.11, 0.14, 1), "assets/sprites/ores/ore_7.png"),  
+    "sapphire": Ore("sapphire", "Sapphire", 5000, 1, (0.15, 0.30, 0.85, 1), ""),  
+    "amethyst": Ore("amethyst", "Amethyst", 10000, 0.5, (0.60, 0.30, 0.80, 1), ""),  
+    "obsidian": Ore("obsidian", "Obsidian", 50000, 0.1, (0.10, 0.05, 0.15, 1), ""),  
+    "mithril": Ore("mithril", "Mithril", 100000, 0.01, (0.75, 0.90, 1.00, 1), ""),  
 }
 
 # =============================================
