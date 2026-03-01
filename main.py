@@ -5,6 +5,7 @@ from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
+from kivy.animation import Animation
 
 from game_logic import GameState
 from game_data import ORES
@@ -119,9 +120,10 @@ class OreBlock(Widget):
         self.grid_y = grid_y
         self.ore_type = ore_type
         
-        # Determine color from game_data
+        # Determine color and image from game_data
         ore_data = ORES.get(self.ore_type)
-        self.color = ore_data.color if ore_data else (1, 1, 1, 1)
+        self.color = (1, 1, 1, 1) # Reset to white to let image pass through
+        self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
         self.size_hint = (None, None)
         self.size = (120, 120)  # Fixed size matching grid
@@ -129,14 +131,71 @@ class OreBlock(Widget):
 
         with self.canvas:
             Color(*self.color)
-            # Make it slightly smaller than 120 so there's a visible grid gap
-            self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110))
+            if self.image_source:
+                # Use image sprite
+                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110), source=self.image_source)
+            else:
+                # Fallback to color tinted box
+                fallback_color = ore_data.color if ore_data else (1, 1, 1, 1)
+                Color(*fallback_color)
+                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110))
 
     def mine(self):
         """Called when the block is mined. Removes itself from the parent."""
         if self.parent:
             self.parent.remove_widget(self)
 
+
+class ItemDrop(Widget):
+    """Widget representing a dropped item flying towards the player"""
+    def __init__(self, start_pos, target_player, game_state, ore_type, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = (40, 40) # Smaller than a block
+        self.pos = start_pos
+        self.ore_type = ore_type
+        self.game_state = game_state
+        self.target_player = target_player
+
+        ore_data = ORES.get(self.ore_type)
+        self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
+
+        with self.canvas:
+            Color(1, 1, 1, 1)
+            if self.image_source:
+                self.rect = Rectangle(pos=self.pos, size=self.size, source=self.image_source)
+            else:
+                fallback_color = ore_data.color if ore_data else (1, 1, 1, 1)
+                Color(*fallback_color)
+                self.rect = Rectangle(pos=self.pos, size=self.size)
+
+        # Update rect position constantly when moving
+        self.bind(pos=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.rect.pos = self.pos
+
+    def animate_to_player(self):
+        """Starts the animation flying towards the player widget"""
+        target_x = self.target_player.x + (self.target_player.width / 2) - (self.width / 2)
+        target_y = self.target_player.y + (self.target_player.height / 2) - (self.height / 2)
+        
+        anim = Animation(x=target_x, y=target_y, duration=0.4, t='in_out_quad')
+        anim.bind(on_complete=self.on_animation_complete)
+        anim.start(self)
+
+    def on_animation_complete(self, *args):
+        # 1. Add to inventory
+        if self.ore_type in self.game_state.inventory:
+            self.game_state.inventory[self.ore_type] += 1
+        else:
+            self.game_state.inventory[self.ore_type] = 1
+            
+        print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
+        
+        # 2. Delete itself
+        if self.parent:
+            self.parent.remove_widget(self)
 
 class CameraController:
     def __init__(self, zoom=1.0):
@@ -371,12 +430,21 @@ class MapScreen(Screen):
                 self.game_state.grid_map[grid_y][grid_x] = None
                 
                 # Add to inventory
-                if ore_type in self.game_state.inventory:
-                    self.game_state.inventory[ore_type] += 1
-                else:
-                    self.game_state.inventory[ore_type] = 1
-                    
-                print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Inventory: {self.game_state.inventory}")
+                # We spawn an item drop which handles adding to inventory when animation completes
+                world = self.ids.world_layer
+                drop_x = grid_x * 120 + 40
+                drop_y = grid_y * 120 + 40
+                
+                drop = ItemDrop(
+                    start_pos=(drop_x, drop_y),
+                    target_player=player,
+                    game_state=self.game_state,
+                    ore_type=ore_type
+                )
+                world.add_widget(drop) # Display on top of ground 
+                drop.animate_to_player()
+                
+                print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)

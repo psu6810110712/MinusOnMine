@@ -25,12 +25,13 @@ class UITheme:
 # =============================================
 @dataclass
 class Ore:
-    """เก็บข้อมูลแร่: ชื่อ, ค่าขาย, ความหนาแน่น, สี"""
+    """เก็บข้อมูลแร่: ชื่อ, ค่าขาย, ความหนาแน่น, สี, รูปภาพ"""
     ore_id: str         # ชื่อระบุตัวตน เช่น "stone", "gold"
     name: str           # ชื่อแสดง เช่น "Stone", "Gold"
     value: int          # มูลค่าเมื่อขายแร่นี้
     weight: float       # ความหนาแน่น (weight สูง = ได้บ่อย)
-    color: tuple        # สี RGBA สำหรับแสดงผลบน Map
+    color: tuple        # สี RGBA สำหรับแบ็คอัพถ้าไม่มีรูป
+    image_path: str = "" # Path ไปยังรูปภาพแร่
 
 # =============================================
 # คลาสอัปเกรด (Upgrade Class)
@@ -58,18 +59,18 @@ class GameConfig:
 # ข้อมูลแร่ 12 ชนิด (เรียงตามความหายาก)
 # =============================================
 ORES: Dict[str, Ore] = {
-    "stone": Ore("stone", "Stone", 1, 100, (0.50, 0.50, 0.50, 1)),  # เทา
-    "coal": Ore("coal", "Coal", 5, 80, (0.20, 0.20, 0.20, 1)),  # ดำ
-    "copper": Ore("copper", "Copper", 15, 60, (0.80, 0.50, 0.20, 1)),  # ส้มทองแดง
-    "iron": Ore("iron", "Iron", 30, 40, (0.60, 0.60, 0.70, 1)),  # เทาเงิน
-    "gold": Ore("gold", "Gold", 100, 20, (1.00, 0.84, 0.00, 1)),  # ทอง
-    "diamond": Ore("diamond", "Diamond", 500, 5, (0.50, 0.90, 1.00, 1)),  # ฟ้าอ่อน
-    "emerald": Ore("emerald", "Emerald", 1000, 3, (0.18, 0.80, 0.44, 1)),  # เขียวมรกต
-    "ruby": Ore("ruby", "Ruby", 2500, 2, (0.90, 0.11, 0.14, 1)),  # แดงทับทิม
-    "sapphire": Ore("sapphire", "Sapphire", 5000, 1, (0.15, 0.30, 0.85, 1)),  # น้ำเงินไพลิน
-    "amethyst": Ore("amethyst", "Amethyst", 10000, 0.5, (0.60, 0.30, 0.80, 1)),  # ม่วงอเมทิสต์
-    "obsidian": Ore("obsidian", "Obsidian", 50000, 0.1, (0.10, 0.05, 0.15, 1)),  # ดำม่วง
-    "mithril": Ore("mithril", "Mithril", 100000, 0.01, (0.75, 0.90, 1.00, 1)),  # ฟ้าเรืองแสง
+    "stone": Ore("stone", "Stone", 1, 100, (0.50, 0.50, 0.50, 1), "assets/sprites/ores/stone.png"),  
+    "coal": Ore("coal", "Coal", 5, 80, (0.20, 0.20, 0.20, 1), "assets/sprites/ores/coal.png"),  
+    "copper": Ore("copper", "Copper", 15, 60, (0.80, 0.50, 0.20, 1), "assets/sprites/ores/copper.png"),  
+    "iron": Ore("iron", "Iron", 30, 40, (0.60, 0.60, 0.70, 1), "assets/sprites/ores/iron.png"),  
+    "gold": Ore("gold", "Gold", 100, 20, (1.00, 0.84, 0.00, 1), "assets/sprites/ores/gold.png"),  
+    "diamond": Ore("diamond", "Diamond", 500, 5, (0.50, 0.90, 1.00, 1), "assets/sprites/ores/diamond.png"),  
+    "emerald": Ore("emerald", "Emerald", 1000, 3, (0.18, 0.80, 0.44, 1), "assets/sprites/ores/emerald.png"),  
+    "ruby": Ore("ruby", "Ruby", 2500, 2, (0.90, 0.11, 0.14, 1), "assets/sprites/ores/ruby.png"),  
+    "sapphire": Ore("sapphire", "Sapphire", 5000, 1, (0.15, 0.30, 0.85, 1), "assets/sprites/ores/sapphire.png"),  
+    "amethyst": Ore("amethyst", "Amethyst", 10000, 0.5, (0.60, 0.30, 0.80, 1), "assets/sprites/ores/amethyst.png"),  
+    "obsidian": Ore("obsidian", "Obsidian", 50000, 0.1, (0.10, 0.05, 0.15, 1), "assets/sprites/ores/obsidian.png"),  
+    "mithril": Ore("mithril", "Mithril", 100000, 0.01, (0.75, 0.90, 1.00, 1), "assets/sprites/ores/mithril.png"),  
 }
 
 # =============================================
