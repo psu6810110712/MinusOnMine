@@ -2,7 +2,7 @@
 # สำหรับเกม MinusOnMine (Top-Down Mining RPG)
 
 import random
-from game_data import ORES, MAP_WIDTH, MAP_HEIGHT
+from game_data import ORES, MAP_WIDTH, MAP_HEIGHT, WATER_MAP, COLLISION_GRID_SIZE, COLLISION_TILE_SIZE
 
 
 class GameState:
@@ -51,3 +51,11 @@ class GameState:
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
             return self.grid_map[y][x]
         return None
+
+    def is_water_tile(self, px, py):
+        """เช็คว่าพิกัด pixel (px, py) อยู่บน water tile หรือไม่"""
+        col = int(px / COLLISION_TILE_SIZE)
+        row = int(py / COLLISION_TILE_SIZE)
+        if 0 <= col < COLLISION_GRID_SIZE and 0 <= row < COLLISION_GRID_SIZE:
+            return WATER_MAP[row][col] == 1
+        return True  # นอกแผนที่ = blocked

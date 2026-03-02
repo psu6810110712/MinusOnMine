@@ -540,6 +540,7 @@ class MapScreen(Screen):
         player.is_moving = is_moving_now
         player.update_animation(dt)
 
+        # --- World boundary clamping ---
         if new_x < 0:
             new_x = 0
         elif new_x > world.width - player.width:
@@ -549,6 +550,34 @@ class MapScreen(Screen):
             new_y = 0
         elif new_y > world.height - player.height:
             new_y = world.height - player.height
+
+        # --- Water collision check (per-axis for wall sliding) ---
+        inset = 4  # px inset from edges to avoid corner snagging
+        pw = player.width - inset * 2
+        ph = player.height - inset * 2
+
+        # Check X-axis movement
+        def hits_water(px, py):
+            """Check if player bounding box at (px, py) overlaps any water tile"""
+            gs = self.game_state
+            left = px + inset
+            right = px + inset + pw
+            bottom = py + inset
+            top = py + inset + ph
+            # Check four corners + midpoints for accuracy
+            for cx in [left, (left + right) / 2, right]:
+                for cy in [bottom, (bottom + top) / 2, top]:
+                    if gs.is_water_tile(cx, cy):
+                        return True
+            return False
+
+        # Try X movement first
+        if hits_water(new_x, player.y):
+            new_x = player.x  # Block X movement
+
+        # Try Y movement
+        if hits_water(new_x, new_y):
+            new_y = player.y  # Block Y movement
 
         player.x = new_x
         player.y = new_y
