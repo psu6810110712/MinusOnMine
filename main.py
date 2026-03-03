@@ -132,7 +132,7 @@ class OreBlock(Widget):
             Color(*self.color)
             
             # --- กำหนดขนาดแร่ให้เล็กลง (เช่น 50x50) ---
-            visual_size = 55
+            visual_size = 40
             # คำนวณจุดกึ่งกลางของช่อง 120x120 (ให้อยู่ตรงกลางกริด)
             offset = (120 - visual_size) / 2  
             
@@ -596,7 +596,7 @@ class MapScreen(Screen):
             for cx in [left, (left + right) / 2, right]:
                 for cy in [bottom, (bottom + top) / 2, top]:
                     
-                    # 1. เช็กการชนกับน้ำ (ระบบเดิมของคุณ)
+                    # 1. เช็กการชนกับน้ำ 
                     if hasattr(gs, 'is_water_tile') and gs.is_water_tile(cx, cy):
                         return True
                         
@@ -606,11 +606,26 @@ class MapScreen(Screen):
                     grid_y = int(cy / 120)
                     
                     # ตรวจสอบว่าพิกัดยังอยู่ในขอบเขตแผนที่
-                    if hasattr(gs, 'grid_width') and hasattr(gs, 'grid_height'):
-                        if 0 <= grid_x < gs.grid_width and 0 <= grid_y < gs.grid_height:
-                            # ถ้าตำแหน่งใน Array ไม่ใช่ None แปลว่ามีสิ่งกีดขวางอยู่!
-                            if gs.grid_map[grid_y][grid_x] is not None:
-                                return True
+                    if gs.grid_map[grid_y][grid_x] is not None:
+                                # ==========================================
+                                # อัปเดตใหม่: บีบกรอบการชน (Hitbox) ให้เล็กกว่ารูปภาพจริง
+                                # ==========================================
+                                visual_size = 45 
+                                offset = (120 - visual_size) / 2
+                                
+                                # --- ปรับระยะความชิดตรงนี้ครับ ---
+                                # ยิ่งใส่เลขเยอะ ยิ่งเดินทะลุเข้าไปใกล้แร่ได้มากขึ้น
+                                ore_inset_x = 10  # ยอมให้เดินซ้อนทับด้านซ้าย/ขวา ได้ 10 พิกเซล
+                                ore_inset_y = 15  # ยอมให้เดินซ้อนทับด้านบน/ล่าง ได้ 15 พิกเซล
+                                
+                                ore_left = (grid_x * 120) + offset + ore_inset_x
+                                ore_right = (grid_x * 120) + offset + visual_size - ore_inset_x
+                                ore_bottom = (grid_y * 120) + offset + ore_inset_y
+                                ore_top = (grid_y * 120) + offset + visual_size - ore_inset_y
+                                
+                                # เช็กว่าจุดพิกัด เหยียบโดน Hitbox ที่ถูกบีบแล้วหรือไม่
+                                if ore_left <= cx <= ore_right and ore_bottom <= cy <= ore_top:
+                                    return True
                                 
             return False
 
