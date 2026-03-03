@@ -432,6 +432,12 @@ class MapScreen(Screen):
             if not player.is_mining:
                 self.mine_action()
 
+        if _codepoint == 'u' or key == 117:
+            self.keys_pressed.discard(key)
+            self.ids.player_character.is_moving = False
+            self.toggle_upgrade_menu()
+            return
+
     def mine_action(self):
         player = self.ids.player_character
         
@@ -619,6 +625,76 @@ class MapScreen(Screen):
             player_pos=(player.x + player.width / 2.0, player.y + player.height / 2.0),
             background_source="ground.png",
         )
+        # --- ตัวแปรสำหรับระบบอัปเกรด ---
+        self.pickaxe_level = 1
+        
+        # ตารางราคาอัปเกรด (เลเวลถัดไป : {ชนิดแร่: จำนวนที่ใช้})
+        self.upgrade_costs = {
+            2: {"stone": 10},                 # อัปเป็น Lv.2 ใช้หิน 10 ก้อน
+            3: {"stone": 20, "copper": 5},    # อัปเป็น Lv.3 ใช้หิน 20, ทองแดง 5
+            4: {"copper": 20, "iron": 10},
+            5: {"iron": 30, "gold": 5}
+        }
+    def toggle_upgrade_menu(self):
+        """เปิด/ปิด หน้าต่างอัปเกรด"""
+        overlay = self.ids.upgrade_overlay
+        if overlay.disabled:
+            overlay.opacity = 1
+            overlay.disabled = False
+            self.update_upgrade_ui()
+        else:
+            overlay.opacity = 0
+            overlay.disabled = True
+
+    def update_upgrade_ui(self):
+        """อัปเดตข้อความราคาในหน้าจอ"""
+        next_level = self.pickaxe_level + 1
+        
+        if next_level in self.upgrade_costs:
+            costs = self.upgrade_costs[next_level]
+            cost_text = "\n".join([f"- {req_amount} {ore.capitalize()}" for ore, req_amount in costs.items()])
+            
+            speed_text = f"Speed: {max(0.01, 0.05 - (self.pickaxe_level * 0.01)):.2f}s"
+            self.ids.upgrade_info_label.text = f"Pickaxe Lv.{self.pickaxe_level}\n{speed_text}\n\nNext Level Cost:\n{cost_text}"
+            self.ids.btn_buy_upgrade.disabled = False
+            self.ids.btn_buy_upgrade.text = "UPGRADE NOW"
+        else:
+            self.ids.upgrade_info_label.text = f"Pickaxe Lv.{self.pickaxe_level}\nMAX LEVEL REACHED!"
+            self.ids.btn_buy_upgrade.disabled = True
+            self.ids.btn_buy_upgrade.text = "MAXED OUT"
+
+    def buy_upgrade(self):
+        """เมื่อกดปุ่มซื้ออัปเกรด"""
+        next_level = self.pickaxe_level + 1
+        if next_level not in self.upgrade_costs:
+            return # เลเวลตันแล้ว
+
+        costs = self.upgrade_costs[next_level]
+        
+        # 1. เช็กว่าแร่ในกระเป๋ามีพอจ่ายไหม?
+        can_afford = True
+        for ore, req_amount in costs.items():
+            if self.game_state.inventory.get(ore, 0) < req_amount:
+                can_afford = False
+                break
+                
+        # 2. ถ้ามีแร่พอ ให้หักแร่และอัปเกรด
+        if can_afford:
+            for ore, req_amount in costs.items():
+                self.game_state.inventory[ore] -= req_amount
+                
+            self.pickaxe_level += 1
+            
+            # --- หัวใจสำคัญ: ทำให้ขุดเร็วขึ้น! ---
+            player = self.ids.player_character
+            # ลดเวลาอนิเมชันตอนขุดลง (ยิ่งค่าน้อย ยิ่งสับจอบไว)
+            player.mine_speed = max(0.01, player.mine_speed - 0.01) 
+            
+            print(f"Upgraded to Level {self.pickaxe_level}! New Speed: {player.mine_speed}")
+            self.update_upgrade_ui() # รีเฟรชหน้าจอ
+        else:
+            # ถ้าแร่ไม่พอ ให้ปุ่มบอกใบ้
+            self.ids.btn_buy_upgrade.text = "NOT ENOUGH ORES!"
 
 
 class MinusOnMineApp(App):

@@ -235,6 +235,56 @@
                 Rectangle:
                     pos: self.x + 2, self.y + 2
                     size: self.width - 4, self.height - 4
+        
+        # ==========================================
+        # หน้าต่างอัปเกรดเครื่องมือ (Upgrade Overlay)
+        # ==========================================
+        BoxLayout:
+            id: upgrade_overlay
+            orientation: 'vertical'
+            size_hint: 0.6, 0.6
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            padding: 20
+            spacing: 15
+            disabled: True   # ซ่อนไว้ตอนเริ่มเกม
+            opacity: 0
+            
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.15, 0.15, 0.95  # พื้นหลังสีเทาเข้มโปร่งแสง
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [15]
+                Color:
+                    rgba: 1, 0.8, 0, 1  # ขอบสีทอง
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
+                    width: 2
+
+            Label:
+                text: 'BLACKSMITH'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # ใช้ฟอนต์ของคุณ
+                font_size: '35sp'
+                color: 1, 0.8, 0, 1
+                size_hint_y: 0.2
+
+            Label:
+                id: upgrade_info_label
+                text: 'Pickaxe Lv.1\nMining Speed: Normal\n\nNext Level Cost:\n10 Stone'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '20sp'
+                halign: 'center'
+                color: 1, 1, 1, 1
+
+            Button:
+                id: btn_buy_upgrade
+                text: 'UPGRADE NOW'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '25sp'
+                size_hint_y: 0.3
+                background_color: 0.2, 0.7, 0.3, 1
+                on_press: root.buy_upgrade()
 
 
 # =============================================
