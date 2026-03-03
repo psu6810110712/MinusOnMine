@@ -551,37 +551,56 @@ class MapScreen(Screen):
         elif new_y > world.height - player.height:
             new_y = world.height - player.height
 
-        # --- Water collision check (per-axis for wall sliding) ---
-        inset = 4  # px inset from edges to avoid corner snagging
-        pw = player.width - inset * 2
-        ph = player.height - inset * 2
+        # --- ระบบตรวจสอบการชน (หิน/แร่/สิ่งกีดขวาง) ---
+        inset_x = 25  
+        inset_y = 20  
+        pw = player.width - inset_x * 2
+        ph = player.height - inset_y * 2
 
-        # Check X-axis movement
-        def hits_water(px, py):
-            """Check if player bounding box at (px, py) overlaps any water tile"""
+        def hits_solid(px, py):
+            """ตรวจสอบว่ากรอบของตัวละครทับซ้อนกับสิ่งกีดขวางหรือไม่"""
             gs = self.game_state
-            left = px + inset
-            right = px + inset + pw
-            bottom = py + inset
-            top = py + inset + ph
-            # Check four corners + midpoints for accuracy
+            left = px + inset_x
+            right = px + inset_x + pw
+            bottom = py + inset_y
+            top = py + inset_y + ph
+            
+            # เช็กจุดทั้ง 4 มุม และจุดกึ่งกลางของกรอบตัวละคร
             for cx in [left, (left + right) / 2, right]:
                 for cy in [bottom, (bottom + top) / 2, top]:
-                    if gs.is_water_tile(cx, cy):
+                    
+                    # 1. เช็กการชนกับน้ำ (ระบบเดิมของคุณ)
+                    if hasattr(gs, 'is_water_tile') and gs.is_water_tile(cx, cy):
                         return True
+                        
+                    # 2. เช็กการชนกับหินหรือแร่ (ดึงข้อมูลจาก Grid)
+                    # แปลงพิกัด Pixel ให้เป็นพิกัด Grid (หารด้วยขนาดบล็อก 120)
+                    grid_x = int(cx / 120)
+                    grid_y = int(cy / 120)
+                    
+                    # ตรวจสอบว่าพิกัดยังอยู่ในขอบเขตแผนที่
+                    if hasattr(gs, 'grid_width') and hasattr(gs, 'grid_height'):
+                        if 0 <= grid_x < gs.grid_width and 0 <= grid_y < gs.grid_height:
+                            # ถ้าตำแหน่งใน Array ไม่ใช่ None แปลว่ามีสิ่งกีดขวางอยู่!
+                            if gs.grid_map[grid_y][grid_x] is not None:
+                                return True
+                                
             return False
 
-        # Try X movement first
-        if hits_water(new_x, player.y):
-            new_x = player.x  # Block X movement
+        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้) ---
+        # ทดสอบการขยับแกน X ก่อน
+        if hits_solid(new_x, player.y):
+            new_x = player.x  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง X กลับมาที่เดิม
 
-        # Try Y movement
-        if hits_water(new_x, new_y):
-            new_y = player.y  # Block Y movement
+        # ทดสอบการขยับแกน Y
+        if hits_solid(new_x, new_y):
+            new_y = player.y  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง Y กลับมาที่เดิม
 
+        # อัปเดตตำแหน่งจริงของตัวละคร
         player.x = new_x
         player.y = new_y
 
+        # --- อัปเดตกล้องและ Minimap (ระบบเดิมของคุณ) ---
         world.x, world.y = self.camera.update(
             player_pos=(player.x, player.y),
             player_size=(player.width, player.height),
