@@ -120,26 +120,35 @@ class OreBlock(Widget):
         self.grid_y = grid_y
         self.ore_type = ore_type
         
-        # Determine color and image from game_data
         ore_data = ORES.get(self.ore_type)
-        self.color = (1, 1, 1, 1) # Reset to white to let image pass through
+        self.color = (1, 1, 1, 1) 
         self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
         self.size_hint = (None, None)
-        self.size = (120, 120)  # Fixed size matching grid
+        self.size = (120, 120)  # ขนาดยังคงเป็น 120x120 เพื่อให้ระยะการขุดและชนยังเท่าเดิม
         self.pos = (self.grid_x * 120, self.grid_y * 120)
 
         with self.canvas:
             Color(*self.color)
+            
+            # --- กำหนดขนาดแร่ให้เล็กลง (เช่น 50x50) ---
+            visual_size = 55
+            # คำนวณจุดกึ่งกลางของช่อง 120x120 (ให้อยู่ตรงกลางกริด)
+            offset = (120 - visual_size) / 2  
+            
             if self.image_source:
-                # Use image sprite
-                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110), source=self.image_source)
+                self.rect = Rectangle(
+                    pos=(self.pos[0] + offset, self.pos[1] + offset), 
+                    size=(visual_size, visual_size), 
+                    source=self.image_source
+                )
             else:
-                # Fallback to color tinted box
                 fallback_color = ore_data.color if ore_data else (1, 1, 1, 1)
                 Color(*fallback_color)
-                self.rect = Rectangle(pos=(self.pos[0] + 5, self.pos[1] + 5), size=(110, 110))
-
+                self.rect = Rectangle(
+                    pos=(self.pos[0] + offset, self.pos[1] + offset), 
+                    size=(visual_size, visual_size)
+                )
     def mine(self):
         """Called when the block is mined. Removes itself from the parent."""
         if self.parent:
