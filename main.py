@@ -447,6 +447,18 @@ class MapScreen(Screen):
             self.toggle_upgrade_menu()
             return
 
+        # Dev Tool: กดปุ่ม 'P' เพื่อดูพิกัดที่ตัวละครยืนอยู่
+        if _codepoint == 'p' or key == 112:
+            player = self.ids.player_character
+            # หาจุดกึ่งกลางของตัวละคร
+            player_cx = player.x + (player.width / 2.0)
+            player_cy = player.y + (player.height / 2.0)
+            
+            # แปลงเป็นพิกัด Grid
+            grid_x = int(player_cx / 120)
+            grid_y = int(player_cy / 120)
+            print(f"📍 ตัวละครยืนอยู่ที่พิกัด: ({grid_x}, {grid_y})")
+
     def mine_action(self):
         player = self.ids.player_character
         

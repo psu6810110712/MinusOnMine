@@ -13,6 +13,16 @@ class GameState:
         self.grid_height = MAP_HEIGHT
         self.money = 0
         self.inventory = {}  # {"stone": 3, "gold": 1, ...}
+        
+        # ==========================================
+        # 1. เพิ่ม Blacklist: พิกัด (X, Y) ที่ห้ามแร่เกิด (ต้นไม้, ทางเดิน)
+        # ==========================================
+        self.forbidden_grids = [
+            (2, 3), (2, 4), (5, 5),  # สมมติว่าเป็นพิกัดต้นไม้
+            (7, 8), (8, 8),          # สมมติว่าเป็นทางเดิน
+            # *** คุณต้องเดินสำรวจในเกมแล้วเอาเลขพิกัดมาเติมตรงนี้นะครับ ***
+        ]
+        
         self.grid_map = []   # 2D list: None = ว่าง, "stone"/"coal"/... = แร่
         self.generate_map()
 
@@ -27,12 +37,19 @@ class GameState:
         for y in range(self.grid_height):
             row = []
             for x in range(self.grid_width):
-                # 60% โอกาสเป็นหิน/แร่, 40% เป็นทางเดิน
-                if random.random() < 0.6:
-                    ore = self._weighted_random_ore(ore_pool)
-                    row.append(ore)
+                # ==========================================
+                # 2. เช็คพิกัดก่อนว่าโดนแบน (อยู่ใน Blacklist) ไหม?
+                # ==========================================
+                if (x, y) in self.forbidden_grids:
+                    # ถ้าเป็นต้นไม้/ทางเดิน ให้ปล่อยช่องนี้ให้ว่าง (None)
+                    row.append(None)
                 else:
-                    row.append(None)  # ทางเดิน
+                    # ถ้าเป็นพื้นที่ปกติ (หญ้า) ให้สุ่ม 60% โอกาสเกิดแร่ตามโค้ดเดิม
+                    if random.random() < 0.6:
+                        ore = self._weighted_random_ore(ore_pool)
+                        row.append(ore)
+                    else:
+                        row.append(None)  # ทางเดินว่างๆ บนพื้นหญ้า
             self.grid_map.append(row)
 
     def _weighted_random_ore(self, ore_pool):
