@@ -32,28 +32,52 @@ class GameState:
 
     def generate_map(self):
         """สุ่มวางแร่บน grid ตาม weight ใน ORES"""
-        # สร้าง list ของแร่ทั้งหมดพร้อม weight
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
-            ore_pool.append((ore_id, ore_obj.weight))  # เข้าถึง object.weight แทน dict["weight"]
+            ore_pool.append((ore_id, ore_obj.weight))
 
         self.grid_map = []
         for y in range(self.grid_height):
             row = []
             for x in range(self.grid_width):
-                # ==========================================
-                # 2. เช็คพิกัดก่อนว่าโดนแบน (อยู่ใน Blacklist) ไหม?
-                # ==========================================
+                
+                center_px = (x * 120) + 60
+                center_py = (y * 120) + 60
+
+                # 1. เช็ก Blacklist ต้นไม้/ทางเดิน
                 if (x, y) in self.forbidden_grids:
-                    # ถ้าเป็นต้นไม้/ทางเดิน ให้ปล่อยช่องนี้ให้ว่าง (None)
+                    row.append(None)
+                    continue # ข้ามไปทำช่องถัดไปเลย
+                
+                safe_margin = 55  # ระยะห่างจากน้ำ (ตัวเลขยิ่งเยอะ แร่งยิ่งห่างน้ำ)
+                
+                # สร้างจุดสแกน 5 จุด (ตรงกลาง, ซ้าย, ขวา, บน, ล่าง)
+                scan_points = [
+                    (center_px, center_py),
+                    (center_px - safe_margin, center_py),
+                    (center_px + safe_margin, center_py),
+                    (center_px, center_py - safe_margin),
+                    (center_px, center_py + safe_margin)
+                ]
+                
+                is_near_water = False
+                if hasattr(self, 'is_water_tile'):
+                    for px, py in scan_points:
+                        if self.is_water_tile(px, py):
+                            is_near_water = True
+                            break # ถ้าระยะแตะน้ำปุ๊บ สั่งยกเลิกทันที
+                
+                # ถ้าอยู่ใกล้ขอบน้ำเกินไป ให้ข้ามช่องนี้ไป
+                if is_near_water:
                     row.append(None)
                 else:
-                    # ถ้าเป็นพื้นที่ปกติ (หญ้า) ให้สุ่ม 60% โอกาสเกิดแร่ตามโค้ดเดิม
+                    # 3. ถ้าเป็นพื้นที่ปลอดภัยจริงๆ ให้สุ่มเกิดแร่ 60%
                     if random.random() < 0.6:
                         ore = self._weighted_random_ore(ore_pool)
                         row.append(ore)
                     else:
-                        row.append(None)  # ทางเดินว่างๆ บนพื้นหญ้า
+                        row.append(None)
+                        
             self.grid_map.append(row)
 
     def _weighted_random_ore(self, ore_pool):
