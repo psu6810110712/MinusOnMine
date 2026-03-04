@@ -157,7 +157,7 @@ class OreBlock(Widget):
 
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
-    def __init__(self, start_pos, target_player, game_state, ore_type, **kwargs):
+    def __init__(self, start_pos, target_player, game_state, map_screen, ore_type, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
         self.size = (40, 40) # Smaller than a block
@@ -165,6 +165,7 @@ class ItemDrop(Widget):
         self.ore_type = ore_type
         self.game_state = game_state
         self.target_player = target_player
+        self.map_screen = map_screen
 
         ore_data = ORES.get(self.ore_type)
         self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
@@ -202,11 +203,34 @@ class ItemDrop(Widget):
             
         print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
         
-        # 2. Delete itself
+        # 2. แจก EXP ตามชนิดแร่
+        exp_rewards = {
+            'stone': 10,
+            'coal': 15,
+            'copper': 20,
+            'iron': 35,
+            'gold': 50
+        }
+        # ดึงค่า EXP ถ้าไม่มีแร่นี้ในดิกชันนารีให้ 10 EXP เป็นค่าเริ่มต้น
+        exp_gained = exp_rewards.get(self.ore_type, 10) 
+        
+        # สั่งบวก EXP เข้า GameState
+        is_level_up = self.game_state.add_exp(exp_gained)
+        
+        if is_level_up:
+            print(f"🎉 LEVEL UP! ตอนนี้เลเวล {self.game_state.level} แล้ว! 🎉")
+            
+        # สั่งอัปเดตหน้าจอ UI
+        self.map_screen.update_hud()
+        
+        # Delete itself (โค้ดลบรูปแร่ทิ้งเหมือนเดิม)
+        if self.parent:
+            self.parent.remove_widget(self)
+        # Delete itself
         if self.parent:
             self.parent.remove_widget(self)
         
-        # 3. Update UI if inventory is open
+        # Update UI if inventory is open
         # We can trigger an update by firing an event or just calling a global or parent method
         # For simplicity, we just check if grandparent is MapScreen (or just let the user toggle to refresh)
         # We can let the toggle handle the refresh to keep it simple.
@@ -398,6 +422,11 @@ class MapScreen(Screen):
              overlay.opacity = 0
              overlay.disabled = True
 
+    def update_hud(self):
+        """อัปเดตข้อความ Level และ EXP บนหน้าจอ"""
+        self.ids.level_label.text = f"Lv. {self.game_state.level}"
+        self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
+
     def update_inventory_ui(self):
         grid = self.ids.inventory_grid
         grid.clear_widgets()
@@ -521,7 +550,8 @@ class MapScreen(Screen):
                     start_pos=(drop_x, drop_y),
                     target_player=player,
                     game_state=self.game_state,
-                    ore_type=ore_type
+                    ore_type=ore_type,
+                    map_screen=self
                 )
                 world.add_widget(drop) # Display on top of ground 
                 drop.animate_to_player()
