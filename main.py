@@ -13,13 +13,14 @@ from kivy.factory import Factory
 from kivy.metrics import dp
 from game_logic import GameState
 from game_data import ORES
-from widgets import FloatText, NPCWidget, SellItemRow, SellOverlay
+from widgets import FloatText, NPCWidget, SellItemRow, SellOverlay, ExplosionEffect
 
 # Registering custom widgets with the Factory so that the .kv file can find them
 Factory.register('SellOverlay', cls=SellOverlay)
 Factory.register('SellItemRow', cls=SellItemRow)
 Factory.register('NPCWidget', cls=NPCWidget)
 Factory.register('FloatText', cls=FloatText)
+Factory.register('ExplosionEffect', cls=ExplosionEffect)
 
 
 class PlayerWidget(Widget):
@@ -726,8 +727,14 @@ class MapScreen(Screen):
                     ore_type=ore_type,
                     map_screen=self
                 )
-                world.add_widget(drop) # Display on top of ground 
+                world.add_widget(drop) 
                 drop.animate_to_player()
+
+                # Spawn Explosion Effect AFTER drop so it renders ON TOP
+                explode_x = (grid_x * 120) - 4
+                explode_y = (grid_y * 120) - 4
+                explosion = ExplosionEffect(pos=(explode_x, explode_y))
+                world.add_widget(explosion)
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
 

@@ -439,3 +439,56 @@ class SellItemRow(BoxLayout):
         self.subtotal = self.current_selected_amount * self.price_per_unit
         if self.parent_menu:
             self.parent_menu.recalculate_total_sell()
+
+
+class ExplosionEffect(Widget):
+    """Visual explosion effect that plays once and removes itself."""
+    image_source = StringProperty("assets/Explosions.png")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = (128, 128)
+        
+        # 9 frames in a 1728x192 row
+        self.current_frame = 0
+        self.max_frames = 9
+        
+        from kivy.core.image import Image as CoreImage
+        self.sprite_texture = CoreImage(self.image_source).texture
+        
+        with self.canvas:
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(
+                pos=self.pos,
+                size=self.size,
+                texture=self.sprite_texture
+            )
+
+        self.update_tex_coords()
+        self.bind(pos=self.update_canvas)
+        
+        from kivy.clock import Clock
+        Clock.schedule_interval(self.animate, 0.05) # Play animation fast
+
+    def update_tex_coords(self):
+        """Map the correct frame from the 9x1 spritesheet."""
+        w = 1.0 / 9.0
+        u0 = self.current_frame * w
+        u1 = u0 + w
+        # Texture origin is typically bottom-left
+        self.rect.tex_coords = (u0, 0, u1, 0, u1, 1, u0, 1)
+
+    def animate(self, dt):
+        """Cycle through frames and remove widget on completion."""
+        self.current_frame += 1
+        if self.current_frame >= self.max_frames:
+            if self.parent:
+                self.parent.remove_widget(self)
+            return False # Stop timer
+        self.update_tex_coords()
+        return True
+
+    def update_canvas(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
