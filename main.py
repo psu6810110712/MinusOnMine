@@ -411,6 +411,7 @@ class MapScreen(Screen):
             world.add_widget(self.npc, index=len(world.children))
 
         self.render_initial_map()
+        self.update_hud()
 
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
@@ -449,9 +450,10 @@ class MapScreen(Screen):
              overlay.disabled = True
 
     def update_hud(self):
-        """อัปเดตข้อความ Level และ EXP บนหน้าจอ"""
+        """อัปเดตข้อความ Level, EXP และ Money บนหน้าจอ"""
         self.ids.level_label.text = f"Lv. {self.game_state.level}"
         self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
+        self.ids.hud_money_label.text = f"Money: ${int(self.game_state.money)}"
 
     def update_inventory_ui(self):
         # Update Header Labels
