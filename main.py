@@ -246,7 +246,7 @@ class ItemDrop(Widget):
         # We can let the toggle handle the refresh to keep it simple.
 
 
-class InventorySlot(ButtonBehavior, Widget):
+class InventorySlot(Widget):
     """A visual slot in the inventory holding an item icon and its count."""
     item_image = StringProperty("")
     item_count = StringProperty("0")
@@ -260,34 +260,6 @@ class InventorySlot(ButtonBehavior, Widget):
         
         ore_data = ORES.get(self.ore_type)
         self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
-
-    def on_press(self):
-        """Sell this specific type of ore when clicked!"""
-        if self.parent_screen and hasattr(self.parent_screen, 'game_state'):
-            state = self.parent_screen.game_state
-            if self.ore_type in state.inventory and state.inventory[self.ore_type] > 0:
-                amount = state.inventory[self.ore_type]
-                
-                ore_data = ORES.get(self.ore_type)
-                if not ore_data:
-                    return
-                    
-                value = ore_data.value * amount
-                
-                # Update state
-                state.money += value
-                state.current_capacity -= amount
-                state.inventory[self.ore_type] = 0
-                
-                print(f"Sold all {self.ore_type} for ${value}!")
-                
-                # Floating text
-                btn_pos = self.to_window(self.x, self.y)
-                ft = FloatText(text=f"+${value}", color=(0.2, 1, 0.4, 1), pos=btn_pos)
-                self.parent_screen.add_widget(ft)
-                
-                # Refresh UI
-                self.parent_screen.update_inventory_ui()
 
 class CameraController:
     def __init__(self, zoom=1.0):
