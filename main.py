@@ -11,6 +11,7 @@ from kivy.animation import Animation
 
 from game_logic import GameState
 from game_data import ORES
+from widgets import FloatText
 
 
 class PlayerWidget(Widget):
@@ -159,7 +160,7 @@ class OreBlock(Widget):
 
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
-    def __init__(self, start_pos, target_player, game_state, ore_type, **kwargs):
+    def __init__(self, start_pos, target_player, game_state, map_screen, ore_type, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
         self.size = (40, 40) # Smaller than a block
@@ -167,6 +168,7 @@ class ItemDrop(Widget):
         self.ore_type = ore_type
         self.game_state = game_state
         self.target_player = target_player
+        self.map_screen = map_screen
 
         ore_data = ORES.get(self.ore_type)
         self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
@@ -200,38 +202,40 @@ class ItemDrop(Widget):
         added = self.game_state.add_to_inventory(self.ore_type)
         if added:
             print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
-            
-            # 2. Delete itself
-            if self.parent:
-                self.parent.remove_widget(self)
         else:
-            # Backpack full! Drop the item back on the ground.
-            print("Backpack is full! Ore dropped on the floor.")
-            anim = Animation(x=self.pos[0] + 50, y=self.pos[1] - 50, duration=0.3) # Fake bounce
-            anim.start(self)
-
-
-class FloatText(Label):
-    """Floating text for polished UI feedback (+1 Gold, -$500, etc)"""
-    def __init__(self, text, color=(1, 1, 1, 1), **kwargs):
-        super().__init__(**kwargs)
-        self.text = text
-        self.color = color
-        self.font_name = 'assets/fonts/PixelifySans-Bold.ttf'
-        self.font_size = '20sp'
-        self.size_hint = (None, None)
-        self.size = (150, 40)
-        self.opacity = 1.0
-
-    def on_parent(self, widget, parent):
-        if parent:
-            anim = Animation(y=self.y + 100, opacity=0.0, duration=1.0, t='out_quad')
-            anim.bind(on_complete=self.remove_self)
-            anim.start(self)
-
-    def remove_self(self, *args):
+            print(f"Inventory full! Cannot collect {self.ore_type}")
+        
+        # 2. แจก EXP ตามชนิดแร่
+        exp_rewards = {
+            'stone': 10,
+            'coal': 15,
+            'copper': 20,
+            'iron': 35,
+            'gold': 50
+        }
+        # ดึงค่า EXP ถ้าไม่มีแร่นี้ในดิกชันนารีให้ 10 EXP เป็นค่าเริ่มต้น
+        exp_gained = exp_rewards.get(self.ore_type, 10) 
+        
+        # สั่งบวก EXP เข้า GameState
+        is_level_up = self.game_state.add_exp(exp_gained)
+        
+        if is_level_up:
+            print(f"🎉 LEVEL UP! ตอนนี้เลเวล {self.game_state.level} แล้ว! 🎉")
+            
+        # สั่งอัปเดตหน้าจอ UI
+        self.map_screen.update_hud()
+        
+        # Delete itself (โค้ดลบรูปแร่ทิ้งเหมือนเดิม)
         if self.parent:
             self.parent.remove_widget(self)
+        # Delete itself
+        if self.parent:
+            self.parent.remove_widget(self)
+        
+        # Update UI if inventory is open
+        # We can trigger an update by firing an event or just calling a global or parent method
+        # For simplicity, we just check if grandparent is MapScreen (or just let the user toggle to refresh)
+        # We can let the toggle handle the refresh to keep it simple.
 
 
 class InventorySlot(ButtonBehavior, Widget):
@@ -405,6 +409,15 @@ class MapScreen(Screen):
         self.game_state = GameState()
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
+        
+        # --- ระบบอัปเกรด (ย้ายมาไว้ที่นี่เพื่อให้ค่าไม่หาย) ---
+        self.pickaxe_level = 1
+        self.upgrade_costs = {
+            2: {"stone": 10},
+            3: {"stone": 20, "copper": 5},
+            4: {"copper": 20, "iron": 10},
+            5: {"iron": 30, "gold": 5}
+        }
 
     def on_enter(self):
         player = self.ids.player_character
@@ -449,6 +462,11 @@ class MapScreen(Screen):
              # Close Inventory
              overlay.opacity = 0
              overlay.disabled = True
+
+    def update_hud(self):
+        """อัปเดตข้อความ Level และ EXP บนหน้าจอ"""
+        self.ids.level_label.text = f"Lv. {self.game_state.level}"
+        self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
 
     def update_inventory_ui(self):
         # Update Header Labels
@@ -592,7 +610,8 @@ class MapScreen(Screen):
                     start_pos=(drop_x, drop_y),
                     target_player=player,
                     game_state=self.game_state,
-                    ore_type=ore_type
+                    ore_type=ore_type,
+                    map_screen=self
                 )
                 world.add_widget(drop) # Display on top of ground 
                 drop.animate_to_player()
@@ -732,16 +751,6 @@ class MapScreen(Screen):
             player_pos=(player.x + player.width / 2.0, player.y + player.height / 2.0),
             background_source="ground.png",
         )
-        # --- ตัวแปรสำหรับระบบอัปเกรด ---
-        self.pickaxe_level = 1
-        
-        # ตารางราคาอัปเกรด (เลเวลถัดไป : {ชนิดแร่: จำนวนที่ใช้})
-        self.upgrade_costs = {
-            2: {"stone": 10},                 # อัปเป็น Lv.2 ใช้หิน 10 ก้อน
-            3: {"stone": 20, "copper": 5},    # อัปเป็น Lv.3 ใช้หิน 20, ทองแดง 5
-            4: {"copper": 20, "iron": 10},
-            5: {"iron": 30, "gold": 5}
-        }
     def toggle_upgrade_menu(self):
         """เปิด/ปิด หน้าต่างอัปเกรด"""
         overlay = self.ids.upgrade_overlay
@@ -789,6 +798,7 @@ class MapScreen(Screen):
         if can_afford:
             for ore, req_amount in costs.items():
                 self.game_state.inventory[ore] -= req_amount
+                self.game_state.current_capacity -= req_amount
                 
             self.pickaxe_level += 1
             

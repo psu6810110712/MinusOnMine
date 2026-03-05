@@ -335,6 +335,40 @@
                 background_color: 0.2, 0.7, 0.3, 1
                 on_press: root.buy_upgrade()
 
+        # HUD: แสดง Level และ EXP (มุมซ้ายบน)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, None
+            size: 200, 70
+            pos_hint: {'x': 0.01, 'top': 0.75} # วางมุมซ้ายบน
+            padding: 10
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.1, 0.1, 0.7  # พื้นหลังสีดำโปร่งแสง
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [10]
+            
+            Label:
+                id: level_label
+                text: 'Lv. 1'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # ใช้ฟอนต์คุณ (หรือลบบรรทัดนี้ถ้าไม่มี)
+                font_size: '24sp'
+                color: 1, 0.8, 0, 1  # สีทอง
+                text_size: self.size
+                halign: 'left'
+                valign: 'bottom'
+
+            Label:
+                id: exp_label
+                text: 'EXP: 0 / 100'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '16sp'
+                color: 1, 1, 1, 1
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
 
 # =============================================
 # สร้างหน้าตาของตัวละคร (Player)
@@ -386,5 +420,7 @@
         color: 1, 1, 1, 1
         size: 20, 20
         pos: root.right - 25, root.y + 5
+
+        
 
 

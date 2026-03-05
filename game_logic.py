@@ -13,24 +13,32 @@ class GameState:
         self.grid_height = MAP_HEIGHT
         self.money = 0
         self.inventory = {}  # {"stone": 3, "gold": 1, ...}
-        self.max_capacity = 20
-        self.current_capacity = 0
-        
-        # ==========================================
-        # 1. เพิ่ม Blacklist: พิกัด (X, Y) ที่ห้ามแร่เกิด (ต้นไม้, ทางเดิน)
-        # ==========================================
         self.forbidden_grids = [
             (11, 10), (13, 11), (11, 12), (13, 13), 
             (13, 14), (14, 14), (15, 14), (15, 13),
             (9, 9), (9, 10), (10, 10), (9, 11), (10, 11),
             (13, 10), (13, 9), (15, 11), (16, 12), (10, 9),
-            (10, 10), (10, 11)
-
-            # *** คุณต้องเดินสำรวจในเกมแล้วเอาเลขพิกัดมาเติมตรงนี้นะครับ ***
-        ]
+            (10, 10), (10, 11) 
+            ]
         
         self.grid_map = []   # 2D list: None = ว่าง, "stone"/"coal"/... = แร่
         self.generate_map()
+        self.level = 1 # ระบบ level
+        self.current_exp = 0
+        self.exp_to_next_level = 100  # เริ่มต้นใช้ 100 EXP ในการขึ้นเลเวล 2
+        
+        # ระบบ Inventory Capacity
+        self.current_capacity = 0
+        self.max_capacity = 20  # ค่าเริ่มต้น
+
+    def add_to_inventory(self, ore_type):
+        """เพิ่มแร่เข้า inventory ถ้าช่องเก็บของยังไม่เต็ม"""
+        if self.current_capacity < self.max_capacity:
+            self.inventory[ore_type] = self.inventory.get(ore_type, 0) + 1
+            self.current_capacity += 1
+            return True
+        return False
+
 
     def generate_map(self):
         """สุ่มวางแร่บน grid ตาม weight ใน ORES"""
@@ -107,15 +115,17 @@ class GameState:
             return WATER_MAP[row][col] == 1
         return True  # นอกแผนที่ = blocked
 
-    def add_to_inventory(self, ore_type):
-        """Adds item to inventory if there is capacity. Returns True if successful."""
-        if self.current_capacity >= self.max_capacity:
-            return False # Backpack full
+    def add_exp(self, amount):
+        """เพิ่ม EXP และเช็กการอัปเลเวล คืนค่า True ถ้ามีการอัปเลเวล"""
+        self.current_exp += amount
+        leveled_up = False
+        
+        # เช็กว่า EXP ทะลุหลอดไหม (ใช้ while เผื่อได้ EXP ทีเดียวเยอะๆ แล้วเลเวลอัป 2 ขั้น)
+        while self.current_exp >= self.exp_to_next_level:
+            self.current_exp -= self.exp_to_next_level
+            self.level += 1
+            # คำนวณหลอด EXP ถัดไปให้ใช้เยอะขึ้น (เช่น เลเวล * 100)
+            self.exp_to_next_level = self.level * 100
+            leveled_up = True
             
-        if ore_type in self.inventory:
-            self.inventory[ore_type] += 1
-        else:
-            self.inventory[ore_type] = 1
-            
-        self.current_capacity += 1
-        return True
+        return leveled_up
