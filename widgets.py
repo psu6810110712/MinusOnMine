@@ -277,20 +277,85 @@ class ItemDrop(Widget):
 
 
 class NPCWidget(Widget):
-    """Temporary NPC represented by a square block."""
+    """NPC merchant using assets/Pawn_Blue.png with a spritesheet idle animation."""
+    image_source = StringProperty("assets/Pawn_Blue.png")
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        self.size = (100, 100)
+        self.size = (128, 128) # Visual size on screen
+        
+        # Spritesheet info: 1152x1152 total, 6x6 grid -> 192x192 per sprite
+        self.sprite_row = 0 # Row 1 (Idle)
+        self.current_frame = 0
+        self.max_frames = 6
+        
+        # Load texture and set it up
+        from kivy.core.image import Image as CoreImage
+        self.sprite_texture = CoreImage(self.image_source).texture
         
         with self.canvas:
-            Color(0.2, 0.6, 0.8, 1) # A distinct blue color
-            self.rect = Rectangle(pos=self.pos, size=self.size)
-
+            Color(1, 1, 1, 1)
+            self.rect = Rectangle(
+                pos=self.pos,
+                size=self.size,
+                texture=self.sprite_texture
+            )
+        
+        self.update_tex_coords()
         self.bind(pos=self.update_canvas)
+        
+        # Add Name Tag label
+        from kivy.uix.label import Label
+        self.name_tag = Label(
+            text="[b]MERCHANT[/b]",
+            markup=True,
+            font_name='assets/fonts/PixelifySans-Bold.ttf',
+            font_size='18sp',
+            color=(1, 1, 1, 1),
+            size_hint=(None, None),
+            size=(200, 30)
+        )
+        self.add_widget(self.name_tag)
+        self.update_canvas() # Initial positioning of label
+        
+        # Schedule the animation at a typical idle pace
+        from kivy.clock import Clock
+        Clock.schedule_interval(self.animate_sprite, 0.15)
+
+    def update_tex_coords(self):
+        """Map the current frame to the texture coordinates."""
+        # Calculate u,v coordinates (0.0 to 1.0)
+        # grid is 6x6
+        col = self.current_frame % self.max_frames
+        row = self.sprite_row
+        
+        # TinySwords sheet usually has (0,0) at top-left visually
+        # Kivy texture (0,0) is bottom-left
+        # Width/height of one frame is 1/6
+        w = 1.0 / 6.0
+        h = 1.0 / 6.0
+        
+        u0 = col * w
+        v1 = 1.0 - (row * h)
+        u1 = u0 + w
+        v0 = v1 - h
+        
+        # Swapping v1 and v0 to flip the sprite right-side up
+        self.rect.tex_coords = (u0, v1, u1, v1, u1, v0, u0, v0)
+
+    def animate_sprite(self, dt):
+        """Cycle through the frames of the idle row."""
+        self.current_frame = (self.current_frame + 1) % self.max_frames
+        self.update_tex_coords()
 
     def update_canvas(self, *args):
         self.rect.pos = self.pos
+        self.rect.size = self.size
+        # Position name tag above the head
+        if hasattr(self, 'name_tag'):
+            self.name_tag.center_x = self.center_x
+            self.name_tag.y = self.top - 20 # Anchor slightly inside/above the 128px box
 
 
 class InventorySlot(Widget):
