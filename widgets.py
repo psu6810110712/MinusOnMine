@@ -276,8 +276,24 @@ class ItemDrop(Widget):
             anim.start(self)
 
 
+class NPCWidget(Widget):
+    """Temporary NPC represented by a square block."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.size_hint = (None, None)
+        self.size = (100, 100)
+        
+        with self.canvas:
+            Color(0.2, 0.6, 0.8, 1) # A distinct blue color
+            self.rect = Rectangle(pos=self.pos, size=self.size)
 
-class InventorySlot(ButtonBehavior, Widget):
+        self.bind(pos=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.rect.pos = self.pos
+
+
+class InventorySlot(Widget):
     """A visual slot in the inventory holding an item icon and its count."""
     item_image = StringProperty("")
     item_count = StringProperty("0")
@@ -292,31 +308,69 @@ class InventorySlot(ButtonBehavior, Widget):
         ore_data = ORES.get(self.ore_type)
         self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
-    def on_press(self):
-        """Sell this specific type of ore when clicked!"""
-        if self.parent_screen and hasattr(self.parent_screen, 'game_state'):
-            state = self.parent_screen.game_state
-            if self.ore_type in state.inventory and state.inventory[self.ore_type] > 0:
-                amount = state.inventory[self.ore_type]
-                
-                ore_data = ORES.get(self.ore_type)
-                if not ore_data:
-                    return
-                    
-                value = ore_data.value * amount
-                
-                # Update state
-                state.money += value
-                state.current_capacity -= amount
-                state.inventory[self.ore_type] = 0
-                
-                print(f"Sold all {self.ore_type} for ${value}!")
-                
-                # Floating text
-                btn_pos = self.to_window(self.x, self.y)
-                ft = FloatText(text=f"+${value}", color=(0.2, 1, 0.4, 1), pos=btn_pos)
-                self.parent_screen.add_widget(ft)
-                
-                # Refresh UI
-                self.parent_screen.update_inventory_ui()
-                self.parent_screen.update_hud(0)
+
+class SellOverlay(BoxLayout):
+    """Overlay for selling items that blocks touch from passing through to the map."""
+    def on_touch_down(self, touch):
+        # If disabled (invisible/inactive), don't block or handle touch
+        if self.disabled:
+            return False
+            
+        # If the touch is inside this overlay, handle it and don't let it pass to the map
+        if self.collide_point(*touch.pos):
+            super().on_touch_down(touch)
+            return True # Consume touch
+        return False
+
+
+class SellItemRow(BoxLayout):
+    """A row in the NPC sell menu to select how many of an ore to sell."""
+    ore_name = StringProperty("")
+    item_image = StringProperty("")
+    max_amount = NumericProperty(0)
+    current_selected_amount = NumericProperty(0)
+    subtotal = NumericProperty(0)
+
+    def __init__(self, ore_type, max_amount, price_per_unit, parent_menu, **kwargs):
+        super().__init__(**kwargs)
+        self.ore_type = ore_type
+        self.max_amount = max_amount
+        self.price_per_unit = price_per_unit
+        self.parent_menu = parent_menu
+        
+        ore_data = ORES.get(self.ore_type)
+        self.ore_name = ore_data.name if ore_data else ore_type
+        self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            print(f"Debug: SellItemRow ({self.ore_name}) touched at {touch.pos}")
+            # Ensure we call children's on_touch_down (for buttons/sliders)
+            return super().on_touch_down(touch)
+        return False
+
+    def on_slider_change(self, value):
+        self.current_selected_amount = int(value)
+        self.subtotal = self.current_selected_amount * self.price_per_unit
+        
+        if self.parent_menu:
+            self.parent_menu.recalculate_total_sell()
+
+    def adjust_quantity(self, amount):
+        """Increase or decrease quantity within bounds"""
+        new_val = self.current_selected_amount + amount
+        if 0 <= new_val <= self.max_amount:
+            self.current_selected_amount = new_val
+            self.ids.sell_slider.value = self.current_selected_amount # Sync back to slider
+            # Recalculate subtotal (handled by on_slider_change or manually set)
+            self.subtotal = self.current_selected_amount * self.price_per_unit
+            if self.parent_menu:
+                self.parent_menu.recalculate_total_sell()
+
+    def set_max(self):
+        """Set to full owned amount"""
+        self.current_selected_amount = self.max_amount
+        self.ids.sell_slider.value = self.max_amount
+        self.subtotal = self.current_selected_amount * self.price_per_unit
+        if self.parent_menu:
+            self.parent_menu.recalculate_total_sell()

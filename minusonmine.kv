@@ -254,37 +254,78 @@
                     size_hint_y: None
                     height: self.minimum_height
         
-        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
-        Button:
-            text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.98}
-            background_color: 0.8, 0.2, 0.2, 1
-            on_press: root.manager.current = 'menu'
-
-        # ===== 3. Minimap (ซ้ายบน) =====
-        Widget:
-            id: minimap_widget
-            size_hint: None, None
-            size: 200, 200
-            pos_hint: {'x': 0.01, 'top': 0.98}
-            # พื้นหลัง minimap
+        # ==========================================
+        # หน้าต่างขายแร่ให้ NPC (Sell Overlay)
+        # ==========================================
+        SellOverlay:
+            id: sell_overlay
+            orientation: 'vertical'
+            size_hint: 0.8, 0.9
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            padding: 20
+            spacing: 15
+            opacity: 0
+            disabled: True
+            
             canvas.before:
-                # กรอบนอก (ขอบสีขาว)
                 Color:
-                    rgba: 0.8, 0.8, 0.8, 0.6
-                Rectangle:
+                    rgba: 0.1, 0.1, 0.12, 0.98
+                RoundedRectangle:
                     pos: self.pos
                     size: self.size
-                # พื้นหลังดำ
+                    radius: [15]
                 Color:
-                    rgba: 0.05, 0.05, 0.08, 0.85
-                Rectangle:
-                    pos: self.x + 2, self.y + 2
-                    size: self.width - 4, self.height - 4
-        
+                    rgba: 0.2, 0.6, 0.9, 1
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
+                    width: 2
+
+            Label:
+                text: 'MERCHANT'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '35sp'
+                color: 0.4, 0.8, 1, 1
+                size_hint_y: 0.1
+
+            # ลิสต์สินค้า
+            ScrollView:
+                id: sell_scroll_view
+                size_hint_y: 0.7
+                do_scroll_x: False
+                do_scroll_y: True
+                BoxLayout:
+                    id: sell_items_container
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    padding: dp(10)
+
+            # ส่วนสรุปและปุ่มกดยืนยัน
+            BoxLayout:
+                size_hint_y: 0.2
+                orientation: 'horizontal'
+                spacing: 20
+                Label:
+                    id: total_sell_label
+                    text: 'Total Earned: $0'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '24sp'
+                    color: 0.2, 0.9, 0.4, 1
+                
+                Button:
+                    text: 'CLOSE'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '20sp'
+                    background_color: 0.8, 0.2, 0.2, 1
+                    on_press: root.toggle_sell_menu()
+
+                Button:
+                    text: 'CONFIRM SELL'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '20sp'
+                    background_color: 0.2, 0.7, 0.3, 1
+                    on_press: root.confirm_sell()
         # ==========================================
         # หน้าต่างอัปเกรดเครื่องมือ (Upgrade Overlay)
         # ==========================================
@@ -412,15 +453,106 @@
         size: 50, 50
         pos: root.x + 15, root.y + 20
 
-    # ตัวเลขระบุจำนวนมุมขวาล่าง
-    Label:
-        text: root.item_count
-        font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-        font_size: '16sp'
-        color: 1, 1, 1, 1
-        size: 20, 20
-        pos: root.right - 25, root.y + 5
+        # ตัวเลขระบุจำนวนมุมขวาล่าง
+        Label:
+            text: root.item_count
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '16sp'
+            color: 1, 1, 1, 1
+            size: 20, 20
+            pos: root.right - 25, root.y + 5
 
+# =============================================
+# แถวสำหรับตั้งค่าจำนวนการขายแร่ (Sell Menu)
+# =============================================
+<SellItemRow>:
+    size_hint_y: None
+    height: dp(80) # Increased height
+    spacing: dp(15)
+    padding: [dp(10), dp(5)]
+    canvas.before:
+        Color:
+            rgba: 0.18, 0.18, 0.22, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10]
+
+    # รูปไอเทม
+    Image:
+        source: root.item_image
+        size_hint_x: 0.12
+
+    # ชื่อและจำนวนที่มี
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: 0.2
+        Label:
+            text: root.ore_name.capitalize()
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            font_size: '20sp'
+            text_size: self.size
+            halign: 'left'
+            valign: 'bottom'
+        Label:
+            text: f"Owned: {root.max_amount}"
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '14sp'
+            color: 0.7, 0.7, 0.7, 1
+            text_size: self.size
+            halign: 'left'
+            valign: 'top'
+
+    # Controls: - Slider + MAX
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_x: 0.5
+        spacing: dp(8)
         
+        Button:
+            text: '-'
+            size_hint_x: None
+            width: dp(40)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.6, 0.3, 0.3, 1
+            on_press: root.adjust_quantity(-1)
+            
+        BoxLayout:
+            orientation: 'vertical'
+            Slider:
+                id: sell_slider
+                min: 0
+                max: root.max_amount
+                step: 1
+                value: root.current_selected_amount
+                on_value: root.on_slider_change(self.value)
+            Label:
+                text: f"Sell: {int(sell_slider.value)}"
+                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                font_size: '16sp'
+                size_hint_y: 0.4
 
+        Button:
+            text: '+'
+            size_hint_x: None
+            width: dp(40)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.3, 0.6, 0.3, 1
+            on_press: root.adjust_quantity(1)
+
+        Button:
+            text: 'MAX'
+            size_hint_x: None
+            width: dp(60)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.2, 0.5, 0.8, 1
+            on_press: root.set_max()
+
+    # ราคารวม
+    Label:
+        text: f"${root.subtotal}"
+        font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+        font_size: '22sp'
+        color: 0.2, 0.9, 0.4, 1
+        size_hint_x: 0.18
 

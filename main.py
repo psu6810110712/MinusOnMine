@@ -8,10 +8,18 @@ from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.animation import Animation
+from kivy.factory import Factory
 
+from kivy.metrics import dp
 from game_logic import GameState
 from game_data import ORES
-from widgets import FloatText
+from widgets import FloatText, NPCWidget, SellItemRow, SellOverlay
+
+# Registering custom widgets with the Factory so that the .kv file can find them
+Factory.register('SellOverlay', cls=SellOverlay)
+Factory.register('SellItemRow', cls=SellItemRow)
+Factory.register('NPCWidget', cls=NPCWidget)
+Factory.register('FloatText', cls=FloatText)
 
 
 class PlayerWidget(Widget):
@@ -424,6 +432,11 @@ class MapScreen(Screen):
         world = self.ids.world_layer
         player.x = (world.width - player.width) / 2.0
         player.y = (world.height - player.height) / 2.0
+        
+        # Spawn NPC slightly off center
+        if not hasattr(self, 'npc'):
+            self.npc = NPCWidget(pos=(player.x + 200, player.y + 200))
+            world.add_widget(self.npc, index=len(world.children))
 
         self.render_initial_map()
 
@@ -530,10 +543,18 @@ class MapScreen(Screen):
             if not player.is_mining:
                 self.mine_action()
 
+        # Handle 'u' key for upgrades
         if _codepoint == 'u' or key == 117:
             self.keys_pressed.discard(key)
             self.ids.player_character.is_moving = False
             self.toggle_upgrade_menu()
+            return
+
+        # Handle 'F' key for NPC interaction
+        if _codepoint == 'f' or key == 102:
+            self.keys_pressed.discard(key)
+            self.ids.player_character.is_moving = False
+            self.interact_action()
             return
 
         # Dev Tool: กดปุ่ม 'P' เพื่อดูพิกัดที่ตัวละครยืนอยู่
@@ -547,6 +568,124 @@ class MapScreen(Screen):
         #    grid_x = int(player_cx / 120)
         #    grid_y = int(player_cy / 120)
         #    print(f"📍 ตัวละครยืนอยู่ที่พิกัด: ({grid_x}, {grid_y})")
+
+    def interact_action(self):
+        """Check distance to NPC and open Sell UI if close enough"""
+        if not hasattr(self, 'npc'): return
+
+        player = self.ids.player_character
+        # Center of player
+        px = player.x + (player.width / 2.0)
+        py = player.y + (player.height / 2.0)
+        
+        # Center of NPC
+        nx = self.npc.x + (self.npc.width / 2.0)
+        ny = self.npc.y + (self.npc.height / 2.0)
+
+        # Basic distance check (e.g. within 150 pixels)
+        distance = ((px - nx)**2 + (py - ny)**2)**0.5
+        
+        if distance < 180:
+            print("Talking to NPC...")
+            self.toggle_sell_menu()
+        else:
+            print("NPC is too far away.")
+
+    def toggle_sell_menu(self):
+        """เปิด/ปิด หน้าต่างขายของ"""
+        overlay = self.ids.sell_overlay
+        if overlay.disabled:
+             overlay.opacity = 1
+             overlay.disabled = False
+             # Force overlay to front by re-adding it
+             if overlay.parent:
+                 overlay.parent.remove_widget(overlay)
+             self.add_widget(overlay)
+             self.update_sell_ui()
+        else:
+             overlay.opacity = 0
+             overlay.disabled = True
+
+    def update_sell_ui(self):
+        """Populate the sell menu with current inventory"""
+        container = self.ids.sell_items_container
+        container.clear_widgets()
+        
+        has_items = False
+        for ore_type, count in self.game_state.inventory.items():
+            if count > 0:
+                has_items = True
+                ore_data = ORES.get(ore_type)
+                price = ore_data.value if ore_data else 1
+                row = SellItemRow(
+                    ore_type=ore_type,
+                    max_amount=count,
+                    price_per_unit=price,
+                    parent_menu=self
+                )
+                # Ensure height is rigidly set so Scrollview knows how big it is
+                row.size_hint_y = None
+                row.height = dp(80) 
+                
+                container.add_widget(row)
+
+        if not has_items:
+            empty_lbl = Label(
+                text="You have nothing to sell.",
+                font_name='assets/fonts/PixelifySans-Medium.ttf',
+                font_size='20sp',
+                color=(0.7, 0.7, 0.7, 1),
+                size_hint_y=None,
+                height=50
+            )
+            container.add_widget(empty_lbl)
+
+        self.recalculate_total_sell()
+
+    def recalculate_total_sell(self):
+        """Calculate and update the total price label"""
+        total = 0
+        container = self.ids.sell_items_container
+        for child in container.children:
+            if isinstance(child, SellItemRow):
+                total += child.subtotal
+                
+        self.ids.total_sell_label.text = f"Total Earned: ${total}"
+
+    def confirm_sell(self):
+        """Perform the transaction and close the menu"""
+        container = self.ids.sell_items_container
+        total_earned = 0
+        items_sold = 0
+        
+        for child in container.children:
+            if isinstance(child, SellItemRow) and child.current_selected_amount > 0:
+                ore = child.ore_type
+                amount = child.current_selected_amount
+                earned = child.subtotal
+                
+                # Update GameState
+                self.game_state.inventory[ore] -= amount
+                self.game_state.current_capacity -= amount
+                total_earned += earned
+                items_sold += amount
+
+        if total_earned > 0:
+            self.game_state.money += total_earned
+            print(f"Sold {items_sold} items for ${total_earned}!")
+            
+            # Show floating text near NPC
+            if hasattr(self, 'npc'):
+                pos = self.npc.to_window(self.npc.x, self.npc.y + 50)
+                ft = FloatText(text=f"+${total_earned}", color=(0.2, 1, 0.4, 1), pos=pos)
+                self.add_widget(ft)
+                
+            self.update_inventory_ui()
+            # Update HUD so money reflects immediately if we have money on HUD
+            # Or just rely on inventory overlay updating
+            self.update_hud()
+
+        self.toggle_sell_menu()
 
     def mine_action(self):
         player = self.ids.player_character
