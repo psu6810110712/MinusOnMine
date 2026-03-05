@@ -5,6 +5,8 @@ from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.animation import Animation
 
 from game_logic import GameState
@@ -195,35 +197,85 @@ class ItemDrop(Widget):
 
     def on_animation_complete(self, *args):
         # 1. Add to inventory
-        if self.ore_type in self.game_state.inventory:
-            self.game_state.inventory[self.ore_type] += 1
-        else:
-            self.game_state.inventory[self.ore_type] = 1
+        added = self.game_state.add_to_inventory(self.ore_type)
+        if added:
+            print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
             
-        print(f"Collected {self.ore_type}! Inventory: {self.game_state.inventory}")
-        
-        # 2. Delete itself
+            # 2. Delete itself
+            if self.parent:
+                self.parent.remove_widget(self)
+        else:
+            # Backpack full! Drop the item back on the ground.
+            print("Backpack is full! Ore dropped on the floor.")
+            anim = Animation(x=self.pos[0] + 50, y=self.pos[1] - 50, duration=0.3) # Fake bounce
+            anim.start(self)
+
+
+class FloatText(Label):
+    """Floating text for polished UI feedback (+1 Gold, -$500, etc)"""
+    def __init__(self, text, color=(1, 1, 1, 1), **kwargs):
+        super().__init__(**kwargs)
+        self.text = text
+        self.color = color
+        self.font_name = 'assets/fonts/PixelifySans-Bold.ttf'
+        self.font_size = '20sp'
+        self.size_hint = (None, None)
+        self.size = (150, 40)
+        self.opacity = 1.0
+
+    def on_parent(self, widget, parent):
+        if parent:
+            anim = Animation(y=self.y + 100, opacity=0.0, duration=1.0, t='out_quad')
+            anim.bind(on_complete=self.remove_self)
+            anim.start(self)
+
+    def remove_self(self, *args):
         if self.parent:
             self.parent.remove_widget(self)
-        
-        # 3. Update UI if inventory is open
-        # We can trigger an update by firing an event or just calling a global or parent method
-        # For simplicity, we just check if grandparent is MapScreen (or just let the user toggle to refresh)
-        # We can let the toggle handle the refresh to keep it simple.
 
 
-class InventorySlot(Widget):
+class InventorySlot(ButtonBehavior, Widget):
     """A visual slot in the inventory holding an item icon and its count."""
     item_image = StringProperty("")
     item_count = StringProperty("0")
+    ore_type = StringProperty("")
 
-    def __init__(self, ore_type, count, **kwargs):
+    def __init__(self, ore_type, count, parent_screen=None, **kwargs):
         super().__init__(**kwargs)
         self.ore_type = ore_type
         self.item_count = str(count)
+        self.parent_screen = parent_screen
         
         ore_data = ORES.get(self.ore_type)
         self.item_image = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
+
+    def on_press(self):
+        """Sell this specific type of ore when clicked!"""
+        if self.parent_screen and hasattr(self.parent_screen, 'game_state'):
+            state = self.parent_screen.game_state
+            if self.ore_type in state.inventory and state.inventory[self.ore_type] > 0:
+                amount = state.inventory[self.ore_type]
+                
+                ore_data = ORES.get(self.ore_type)
+                if not ore_data:
+                    return
+                    
+                value = ore_data.value * amount
+                
+                # Update state
+                state.money += value
+                state.current_capacity -= amount
+                state.inventory[self.ore_type] = 0
+                
+                print(f"Sold all {self.ore_type} for ${value}!")
+                
+                # Floating text
+                btn_pos = self.to_window(self.x, self.y)
+                ft = FloatText(text=f"+${value}", color=(0.2, 1, 0.4, 1), pos=btn_pos)
+                self.parent_screen.add_widget(ft)
+                
+                # Refresh UI
+                self.parent_screen.update_inventory_ui()
 
 class CameraController:
     def __init__(self, zoom=1.0):
@@ -399,13 +451,32 @@ class MapScreen(Screen):
              overlay.disabled = True
 
     def update_inventory_ui(self):
+        # Update Header Labels
+        cap_label = self.ids.inventory_capacity_label
+        money_label = self.ids.inventory_money_label
+        
+        cap_label.text = f"Capacity: {self.game_state.current_capacity} / {self.game_state.max_capacity}"
+        
+        # We need to calculate total money from game_state
+        # For this prototype, if money isn't tracked in GameState yet, we default to 0
+        if not hasattr(self.game_state, 'money'):
+            self.game_state.money = 0
+            
+        # Update capacity color (red if full)
+        if self.game_state.current_capacity >= self.game_state.max_capacity:
+            cap_label.color = (1, 0.3, 0.3, 1)
+        else:
+            cap_label.color = (0.8, 0.8, 0.8, 1)
+            
+        money_label.text = f"Money: ${self.game_state.money}"
+    
         grid = self.ids.inventory_grid
         grid.clear_widgets()
         
         # Sort inventory by quantity or just iterate
         for ore_type, count in self.game_state.inventory.items():
             if count > 0:
-                slot = InventorySlot(ore_type=ore_type, count=count)
+                slot = InventorySlot(ore_type=ore_type, count=count, parent_screen=self)
                 grid.add_widget(slot)
 
     def on_leave(self):

@@ -13,6 +13,8 @@ class GameState:
         self.grid_height = MAP_HEIGHT
         self.money = 0
         self.inventory = {}  # {"stone": 3, "gold": 1, ...}
+        self.max_capacity = 20
+        self.current_capacity = 0
         
         # ==========================================
         # 1. เพิ่ม Blacklist: พิกัด (X, Y) ที่ห้ามแร่เกิด (ต้นไม้, ทางเดิน)
@@ -104,3 +106,16 @@ class GameState:
         if 0 <= col < COLLISION_GRID_SIZE and 0 <= row < COLLISION_GRID_SIZE:
             return WATER_MAP[row][col] == 1
         return True  # นอกแผนที่ = blocked
+
+    def add_to_inventory(self, ore_type):
+        """Adds item to inventory if there is capacity. Returns True if successful."""
+        if self.current_capacity >= self.max_capacity:
+            return False # Backpack full
+            
+        if ore_type in self.inventory:
+            self.inventory[ore_type] += 1
+        else:
+            self.inventory[ore_type] = 1
+            
+        self.current_capacity += 1
+        return True

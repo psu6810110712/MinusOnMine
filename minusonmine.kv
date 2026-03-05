@@ -174,34 +174,83 @@
         BoxLayout:
             id: inventory_overlay
             orientation: 'vertical'
-            size_hint: 0.8, 0.8
+            size_hint: 0.85, 0.85
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            padding: 20
-            spacing: 10
+            padding: dp(25)
+            spacing: dp(15)
             # Hide by default
             opacity: 0
             disabled: True
             
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.15, 0.9
-                Rectangle:
+                    rgba: 0.15, 0.15, 0.15, 0.95  # Dark subtle background
+                RoundedRectangle:
                     pos: self.pos
                     size: self.size
+                    radius: [20]
+                # Outer Border
+                Color:
+                    rgba: 0.8, 0.6, 0.2, 1  # Golden border
+                Line:
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, 20)
+                    width: dp(2)
                     
-            Label:
-                text: 'Inventory'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '32sp'
+            # Header Layout (Title + Capacity + Money)
+            BoxLayout:
                 size_hint_y: 0.15
+                orientation: 'horizontal'
+                
+                Label:
+                    text: 'INVENTORY'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '36sp'
+                    color: 1, 0.9, 0.4, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 0.5
+                    Label:
+                        id: inventory_capacity_label
+                        text: 'Capacity: 0 / 20'
+                        font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                        font_size: '20sp'
+                        color: 0.8, 0.8, 0.8, 1
+                        halign: 'right'
+                        valign: 'middle'
+                        text_size: self.size
+                    Label:
+                        id: inventory_money_label
+                        text: 'Money: '
+                        font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                        font_size: '22sp'
+                        color: 0.2, 0.9, 0.4, 1
+                        halign: 'right'
+                        valign: 'middle'
+                        text_size: self.size
+                        
+            # Subtle divider line
+            Widget:
+                size_hint_y: None
+                height: dp(2)
+                canvas:
+                    Color:
+                        rgba: 0.4, 0.4, 0.4, 0.5
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
                 
             ScrollView:
                 size_hint_y: 0.85
                 GridLayout:
                     id: inventory_grid
-                    cols: 5
-                    padding: 10
-                    spacing: 15
+                    # Use adaptive columns based on width, min 4 cols
+                    cols: max(4, int(self.width / dp(140)))
+                    padding: dp(15)
+                    spacing: dp(20)
                     size_hint_y: None
                     height: self.minimum_height
         
