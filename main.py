@@ -6,6 +6,7 @@ from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
 from kivy.animation import Animation
+from kivy.clock import Clock
 
 from game_logic import GameState
 from game_data import ORES
@@ -377,6 +378,12 @@ class MapScreen(Screen):
         self.game_state = GameState()
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
+        Clock.schedule_interval(self.auto_regen_stamina, 1.0)
+
+    def auto_regen_stamina(self, dt): #ฟังชั่นฟื้นฟูพลังงาน
+        if hasattr(self, 'game_state'): # เช็กว่าโหลด game_state หรือยัง
+            if self.game_state.regenerate_stamina(1): # ฟื้นทีละ 1 หน่วย
+                self.update_hud()
 
     def on_enter(self):
         player = self.ids.player_character
