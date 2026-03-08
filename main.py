@@ -468,14 +468,9 @@ class MapScreen(Screen):
     def update_hud(self):
         self.ids.level_label.text = f"Lv. {self.game_state.level}"
         self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
-<<<<<<< HEAD
         self.ids.hud_money_label.text = f"Money: ${int(self.game_state.money)}"
         self.ids.hud_torch_label.text = f"Torch: {self.game_state.torch_count} | {self.format_torch_time()}"
-
-=======
         self.ids.stamina_label.text = f"Energy: {self.game_state.current_stamina} / {self.game_state.max_stamina}"
-    
->>>>>>> 655041ec8458f08a85e276b95d555826c9de62a0
     def update_inventory_ui(self):
         # Update Header Labels
         cap_label = self.ids.inventory_capacity_label
@@ -699,7 +694,7 @@ class MapScreen(Screen):
         if player.is_mining:
             return
         if not self.game_state.consume_stamina(5):
-            print("พลังงานหมด! ขุดไม่ได้แล้ว")
+            print("à¸žà¸¥à¸±à¸‡à¸‡à¸²à¸™à¸«à¸¡à¸”! à¸‚à¸¸à¸”à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¹à¸¥à¹‰à¸§")
             return  
         self.update_hud()
         player.is_mining = True
