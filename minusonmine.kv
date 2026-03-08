@@ -1,8 +1,8 @@
-# minusonmine.kv - ไฟล์ออกแบบ UI ของเกม MinusOnMine
-# ใช้ Kivy Language สำหรับจัดการ Widget และ Layout
+﻿# minusonmine.kv - à¹„à¸Ÿà¸¥à¹Œà¸­à¸­à¸à¹à¸šà¸š UI à¸‚à¸­à¸‡à¹€à¸à¸¡ MinusOnMine
+# à¹ƒà¸Šà¹‰ Kivy Language à¸ªà¸³à¸«à¸£à¸±à¸šà¸ˆà¸±à¸”à¸à¸²à¸£ Widget à¹à¸¥à¸° Layout
 
 # =============================================
-# หน้า Menu (MenuScreen)
+# à¸«à¸™à¹‰à¸² Menu (MenuScreen)
 # =============================================
 <MenuScreen>:
     BoxLayout:
@@ -10,7 +10,7 @@
         padding: 40
         spacing: 20
 
-        # พื้นหลังสีเข้ม
+        # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¹€à¸‚à¹‰à¸¡
         canvas.before:
             Color:
                 rgba: 0.12, 0.12, 0.18, 1
@@ -18,11 +18,11 @@
                 pos: self.pos
                 size: self.size
 
-        # ช่องว่างด้านบน
+        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡à¸”à¹‰à¸²à¸™à¸šà¸™
         Widget:
             size_hint_y: 0.2
 
-        # ชื่อเกม
+        # à¸Šà¸·à¹ˆà¸­à¹€à¸à¸¡
         Label:
             text: 'MinusOnMine'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -32,7 +32,7 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # คำอธิบายเกม
+        # à¸„à¸³à¸­à¸˜à¸´à¸šà¸²à¸¢à¹€à¸à¸¡
         Label:
             text: 'Welcome Back, Miner!'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -41,11 +41,11 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # ช่องว่าง
+        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡
         Widget:
             size_hint_y: 0.2
 
-        # ปุ่มเริ่มเกม
+        # à¸›à¸¸à¹ˆà¸¡à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸¡
         Button:
             text: 'Start Mining'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -57,7 +57,7 @@
             color: 1, 1, 1, 1
             on_press: root.manager.current = 'map'
 
-        # เพิ่มปุ่มตั้งค่า (Settings)
+        # à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² (Settings)
         Button:
             text: 'Settings'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -67,7 +67,7 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.3, 0.3, 0.3, 1
 
-        # เพิ่มปุ่มออกจากเกม (Exit)
+        # à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡à¸­à¸­à¸à¸ˆà¸²à¸à¹€à¸à¸¡ (Exit)
         Button:
             text: 'Exit Game'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -76,14 +76,14 @@
             size: 400, 65
             pos_hint: {'center_x': 0.5}
             background_color: 0.8, 0.2, 0.2, 1
-            on_press: app.stop() # คำสั่งปิดแอป Kivy
+            on_press: app.stop() # à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸›à¸´à¸”à¹à¸­à¸› Kivy
 
 
-        # ช่องว่างด้านล่าง
+        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡à¸”à¹‰à¸²à¸™à¸¥à¹ˆà¸²à¸‡
         Widget:
             size_hint_y: 0.05
 
-        # เวอร์ชัน
+        # à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™
         Label:
             text: 'v0.2.2'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -93,18 +93,18 @@
 
 
 # =============================================
-# หน้าแผนที่ขุดแร่ (MapScreen)
+# à¸«à¸™à¹‰à¸²à¹à¸œà¸™à¸—à¸µà¹ˆà¸‚à¸¸à¸”à¹à¸£à¹ˆ (MapScreen)
 # =============================================
 <MapScreen>:
     FloatLayout:
-        # ===== 1. เลเยอร์ของโลก (World Layer) =====
-        # เราจะกำหนดให้โลกใหญ่กว่าหน้าจอมากๆ (เช่น 2400x2400)
+        # ===== 1. à¹€à¸¥à¹€à¸¢à¸­à¸£à¹Œà¸‚à¸­à¸‡à¹‚à¸¥à¸ (World Layer) =====
+        # à¹€à¸£à¸²à¸ˆà¸°à¸à¸³à¸«à¸™à¸”à¹ƒà¸«à¹‰à¹‚à¸¥à¸à¹ƒà¸«à¸à¹ˆà¸à¸§à¹ˆà¸²à¸«à¸™à¹‰à¸²à¸ˆà¸­à¸¡à¸²à¸à¹† (à¹€à¸Šà¹ˆà¸™ 2400x2400)
         RelativeLayout:
             id: world_layer
             size_hint: None, None
-            size: 2400, 2400  #ปรับความใหญ่ของแมพตรงนี้
+            size: 2400, 2400  #à¸›à¸£à¸±à¸šà¸„à¸§à¸²à¸¡à¹ƒà¸«à¸à¹ˆà¸‚à¸­à¸‡à¹à¸¡à¸žà¸•à¸£à¸‡à¸™à¸µà¹‰
 
-            # พื้นหลังแผนที่รูปภาพ
+            # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¹à¸œà¸™à¸—à¸µà¹ˆà¸£à¸¹à¸›à¸ à¸²à¸ž
             canvas.before:
                 Color:
                     rgba: 1, 1, 1, 1 
@@ -113,13 +113,13 @@
                     size: self.size
                     source: 'ground.png' 
 
-            # ตัวละคร (ให้อยู่ข้างใน World)
+            # à¸•à¸±à¸§à¸¥à¸°à¸„à¸£ (à¹ƒà¸«à¹‰à¸­à¸¢à¸¹à¹ˆà¸‚à¹‰à¸²à¸‡à¹ƒà¸™ World)
             PlayerWidget:
                 id: player_character
-                pos: 1000, 800 # ให้เริ่มเกิดที่พิกัดนี้
+                pos: 1000, 800 # à¹ƒà¸«à¹‰à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸´à¸”à¸—à¸µà¹ˆà¸žà¸´à¸à¸±à¸”à¸™à¸µà¹‰
 
-        # ===== 2. UI บนหน้าจอ =====
-        # เวอร์ชันมุมซ้ายล่าง
+        # ===== 2. UI à¸šà¸™à¸«à¸™à¹‰à¸²à¸ˆà¸­ =====
+        # à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™à¸¡à¸¸à¸¡à¸‹à¹‰à¸²à¸¢à¸¥à¹ˆà¸²à¸‡
         Label:
             text: 'v0.2.1'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -129,7 +129,7 @@
             size: 100, 30
             pos_hint: {'x': 0.01, 'y': 0.01}
 
-        # คำแนะนำปุ่มช่องเก็บของ (ตรงกลางล่าง)
+        # à¸„à¸³à¹à¸™à¸°à¸™à¸³à¸›à¸¸à¹ˆà¸¡à¸Šà¹ˆà¸­à¸‡à¹€à¸à¹‡à¸šà¸‚à¸­à¸‡ (à¸•à¸£à¸‡à¸à¸¥à¸²à¸‡à¸¥à¹ˆà¸²à¸‡)
         Label:
             text: '[ Press I or Tab to open Inventory ]'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -139,7 +139,7 @@
             size: 300, 40
             pos_hint: {'center_x': 0.5, 'y': 0.02}
 
-        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
+        # à¸›à¸¸à¹ˆà¸¡à¸à¸¥à¸±à¸šà¹€à¸¡à¸™à¸¹ (à¸­à¸¢à¸¹à¹ˆà¸™à¸­à¸ World à¹€à¸§à¸¥à¸²à¸à¸¥à¹‰à¸­à¸‡à¹€à¸¥à¸·à¹ˆà¸­à¸™ à¸›à¸¸à¹ˆà¸¡à¸ˆà¸°à¹„à¸¡à¹ˆà¹€à¸¥à¸·à¹ˆà¸­à¸™à¸•à¸²à¸¡)
         Button:
             text: 'Back to Menu'
             font_name: 'assets/fonts/PixelifySans-Bold.ttf'
@@ -149,21 +149,21 @@
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
 
-        # ===== 3. Minimap (ซ้ายบน) =====
+        # ===== 3. Minimap (à¸‹à¹‰à¸²à¸¢à¸šà¸™) =====
         Widget:
             id: minimap_widget
             size_hint: None, None
             size: 200, 200
             pos_hint: {'x': 0.01, 'top': 0.98}
-            # พื้นหลัง minimap
+            # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡ minimap
             canvas.before:
-                # กรอบนอก (ขอบสีขาว)
+                # à¸à¸£à¸­à¸šà¸™à¸­à¸ (à¸‚à¸­à¸šà¸ªà¸µà¸‚à¸²à¸§)
                 Color:
                     rgba: 0.8, 0.8, 0.8, 0.6
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                # พื้นหลังดำ
+                # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸”à¸³
                 Color:
                     rgba: 0.05, 0.05, 0.08, 0.85
                 Rectangle:
@@ -255,7 +255,7 @@
                     height: self.minimum_height
         
         # ==========================================
-        # หน้าต่างขายแร่ให้ NPC (Sell Overlay)
+        # à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸‚à¸²à¸¢à¹à¸£à¹ˆà¹ƒà¸«à¹‰ NPC (Sell Overlay)
         # ==========================================
         SellOverlay:
             id: sell_overlay
@@ -287,7 +287,7 @@
                 color: 0.4, 0.8, 1, 1
                 size_hint_y: 0.1
 
-            # ลิสต์สินค้า
+            # à¸¥à¸´à¸ªà¸•à¹Œà¸ªà¸´à¸™à¸„à¹‰à¸²
             ScrollView:
                 id: sell_scroll_view
                 size_hint_y: 0.7
@@ -301,7 +301,7 @@
                     spacing: dp(10)
                     padding: dp(10)
 
-            # ส่วนสรุปและปุ่มกดยืนยัน
+            # à¸ªà¹ˆà¸§à¸™à¸ªà¸£à¸¸à¸›à¹à¸¥à¸°à¸›à¸¸à¹ˆà¸¡à¸à¸”à¸¢à¸·à¸™à¸¢à¸±à¸™
             BoxLayout:
                 size_hint_y: 0.2
                 orientation: 'horizontal'
@@ -327,7 +327,7 @@
                     background_color: 0.2, 0.7, 0.3, 1
                     on_press: root.confirm_sell()
         # ==========================================
-        # หน้าต่างอัปเกรดเครื่องมือ (Upgrade Overlay)
+        # à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸­à¸±à¸›à¹€à¸à¸£à¸”à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸¡à¸·à¸­ (Upgrade Overlay)
         # ==========================================
         BoxLayout:
             id: upgrade_overlay
@@ -336,25 +336,25 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             padding: 20
             spacing: 15
-            disabled: True   # ซ่อนไว้ตอนเริ่มเกม
+            disabled: True   # à¸‹à¹ˆà¸­à¸™à¹„à¸§à¹‰à¸•à¸­à¸™à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸¡
             opacity: 0
             
             canvas.before:
                 Color:
-                    rgba: 0.15, 0.15, 0.15, 0.95  # พื้นหลังสีเทาเข้มโปร่งแสง
+                    rgba: 0.15, 0.15, 0.15, 0.95  # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¹€à¸—à¸²à¹€à¸‚à¹‰à¸¡à¹‚à¸›à¸£à¹ˆà¸‡à¹à¸ªà¸‡
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
                     radius: [15]
                 Color:
-                    rgba: 1, 0.8, 0, 1  # ขอบสีทอง
+                    rgba: 1, 0.8, 0, 1  # à¸‚à¸­à¸šà¸ªà¸µà¸—à¸­à¸‡
                 Line:
                     rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
                     width: 2
 
             Label:
                 text: 'BLACKSMITH'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # ใช้ฟอนต์ของคุณ
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # à¹ƒà¸Šà¹‰à¸Ÿà¸­à¸™à¸•à¹Œà¸‚à¸­à¸‡à¸„à¸¸à¸“
                 font_size: '35sp'
                 color: 1, 0.8, 0, 1
                 size_hint_y: 0.2
@@ -376,16 +376,16 @@
                 background_color: 0.2, 0.7, 0.3, 1
                 on_press: root.buy_upgrade()
 
-        # HUD: แสดง Level, EXP และ Money (มุมขวาบน)
+        # HUD: à¹à¸ªà¸”à¸‡ Level, EXP à¹à¸¥à¸° Money (à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸šà¸™)
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-            size: 200, 100
-            pos_hint: {'right': 0.99, 'top': 0.88} # วางมุมขวาบน (ใต้ปุ่ม Back to Menu)
+            size: 240, 140
+            pos_hint: {'right': 0.99, 'top': 0.88} # à¸§à¸²à¸‡à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸šà¸™ (à¹ƒà¸•à¹‰à¸›à¸¸à¹ˆà¸¡ Back to Menu)
             padding: 10
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7  # พื้นหลังสีดำโปร่งแสง
+                    rgba: 0.1, 0.1, 0.1, 0.7  # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¸”à¸³à¹‚à¸›à¸£à¹ˆà¸‡à¹à¸ªà¸‡
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
@@ -396,7 +396,7 @@
                 text: 'Lv. 1'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '22sp'
-                color: 1, 0.8, 0, 1  # สีทอง
+                color: 1, 0.8, 0, 1  # à¸ªà¸µà¸—à¸­à¸‡
                 text_size: self.size
                 halign: 'left'
                 valign: 'bottom'
@@ -421,8 +421,18 @@
                 halign: 'left'
                 valign: 'top'
 
+            Label:
+                id: hud_torch_label
+                text: 'Torch: 0 | 00:00'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '16sp'
+                color: 1, 0.85, 0.45, 1
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+
 # =============================================
-# สร้างหน้าตาของตัวละคร (Player)
+# à¸ªà¸£à¹‰à¸²à¸‡à¸«à¸™à¹‰à¸²à¸•à¸²à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£ (Player)
 # =============================================
 <PlayerWidget>:
     size_hint: None, None
@@ -437,33 +447,33 @@
 
 
 # =============================================
-# ช่องเก็บของ (Inventory Slot)
+# à¸Šà¹ˆà¸­à¸‡à¹€à¸à¹‡à¸šà¸‚à¸­à¸‡ (Inventory Slot)
 # =============================================
 <InventorySlot>:
     size_hint: None, None
     size: 80, 80
     
     canvas.before:
-        # พื้นหลังช่องใส่ของ
+        # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸Šà¹ˆà¸­à¸‡à¹ƒà¸ªà¹ˆà¸‚à¸­à¸‡
         Color:
             rgba: 0.25, 0.25, 0.3, 1
         Rectangle:
             pos: self.pos
             size: self.size
-        # กรอบ
+        # à¸à¸£à¸­à¸š
         Color:
             rgba: 0.5, 0.5, 0.5, 1
         Line:
             rectangle: (self.x, self.y, self.width, self.height)
             width: 1.5
 
-    # รูปภาพไอเทมตรงกลาง
+    # à¸£à¸¹à¸›à¸ à¸²à¸žà¹„à¸­à¹€à¸—à¸¡à¸•à¸£à¸‡à¸à¸¥à¸²à¸‡
     Image:
         source: root.item_image
         size: 50, 50
         pos: root.x + 15, root.y + 20
 
-        # ตัวเลขระบุจำนวนมุมขวาล่าง
+        # à¸•à¸±à¸§à¹€à¸¥à¸‚à¸£à¸°à¸šà¸¸à¸ˆà¸³à¸™à¸§à¸™à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸¥à¹ˆà¸²à¸‡
         Label:
             text: root.item_count
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -473,7 +483,7 @@
             pos: root.right - 25, root.y + 5
 
 # =============================================
-# แถวสำหรับตั้งค่าจำนวนการขายแร่ (Sell Menu)
+# à¹à¸–à¸§à¸ªà¸³à¸«à¸£à¸±à¸šà¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸ˆà¸³à¸™à¸§à¸™à¸à¸²à¸£à¸‚à¸²à¸¢à¹à¸£à¹ˆ (Sell Menu)
 # =============================================
 <SellItemRow>:
     size_hint_y: None
@@ -488,12 +498,12 @@
             size: self.size
             radius: [10]
 
-    # รูปไอเทม
+    # à¸£à¸¹à¸›à¹„à¸­à¹€à¸—à¸¡
     Image:
         source: root.item_image
         size_hint_x: 0.12
 
-    # ชื่อและจำนวนที่มี
+    # à¸Šà¸·à¹ˆà¸­à¹à¸¥à¸°à¸ˆà¸³à¸™à¸§à¸™à¸—à¸µà¹ˆà¸¡à¸µ
     BoxLayout:
         orientation: 'vertical'
         size_hint_x: 0.2
@@ -558,7 +568,7 @@
             background_color: 0.2, 0.5, 0.8, 1
             on_press: root.set_max()
 
-    # ราคารวม
+    # à¸£à¸²à¸„à¸²à¸£à¸§à¸¡
     Label:
         text: f"${root.subtotal}"
         font_name: 'assets/fonts/PixelifySans-Bold.ttf'
