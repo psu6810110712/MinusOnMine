@@ -26,7 +26,8 @@ class GameState:
         self.level = 1 # ระบบ level
         self.current_exp = 0
         self.exp_to_next_level = 100  # เริ่มต้นใช้ 100 EXP ในการขึ้นเลเวล 2
-
+        self.max_stamina = 100
+        self.current_stamina = 100
 
     def generate_map(self):
         """สุ่มวางแร่บน grid ตาม weight ใน ORES"""
