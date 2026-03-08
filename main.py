@@ -169,7 +169,7 @@ class ItemDrop(Widget):
     def __init__(self, start_pos, target_player, game_state, map_screen, ore_type, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        self.size = (40, 40) # Smaller than a block
+        self.size = (60, 60) # Scaled up to match 80px ores
         self.pos = start_pos
         self.ore_type = ore_type
         self.game_state = game_state
