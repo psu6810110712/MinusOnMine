@@ -21,14 +21,20 @@ class GameState:
             (10, 10), (10, 11) 
             ]
         
-        self.grid_map = []   # 2D list: None = ว่าง, "stone"/"coal"/... = แร่
-        self.generate_map()
+        self.surface_map = []
+        self.underground_map = []
+        self.current_depth = 0  # 0 = Surface, 1 = Underground
+        self.generate_maps()
         self.level = 1 # ระบบ level
         self.current_exp = 0
         self.exp_to_next_level = 100  # เริ่มต้นใช้ 100 EXP ในการขึ้นเลเวล 2
 
+    @property
+    def grid_map(self):
+        """คืนค่าแผนที่ อิงตามความลึก (0: บนดิน, 1: ใต้ดิน)"""
+        return self.surface_map if self.current_depth == 0 else self.underground_map
 
-    def generate_map(self):
+    def generate_maps(self):
         """สุ่มวางแร่บน grid ให้เกิดเป็นกลุ่มๆ (Clustered)"""
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
