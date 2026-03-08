@@ -616,6 +616,11 @@ class MapScreen(Screen):
         self.game_state.current_depth = 1
         self.render_initial_map()
         
+        # 3. Spawn player at a safe starting point in the mine (e.g. center)
+        world = self.ids.world_layer
+        player.x = (world.width - player.width) / 2.0
+        player.y = (world.height - player.height) / 2.0
+        
         print("Descended to the mine layer.")
 
     def on_keyboard_up(self, _window, key, _scancode):
