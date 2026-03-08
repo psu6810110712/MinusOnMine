@@ -740,7 +740,7 @@ class MapScreen(Screen):
         
         target_x = player_cx
         target_y = player_cy
-        
+        self.shake_screen(intensity=4)
         # Grid tiles are 120x120. Offset by 80 to "reach" into the next tile
         reach_distance = 80
         if player.direction == "up":
