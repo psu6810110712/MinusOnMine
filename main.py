@@ -700,6 +700,22 @@ class MapScreen(Screen):
         player.x = new_x
         player.y = new_y
 
+        # --- Dynamic Z-Index Sorting (Depth Sorting) ---
+        # นำ Widget ทั้งหมดใน world (ที่เป็น OreBlock/Player) มาเรียงลำดับวาดใหม่
+        # โดยใครยึดแกน Y ต่ำกว่า (อยู่ด้านล่างจอ) ต้องวาดทีหลังเพื่อให้ทับคนอื่น
+        # ป้องกันกระตุก: เรียงเฉพาะตอนที่มีการขยับเท่านั้น
+        if is_moving_now:
+            children = list(world.children)
+            # เราจะไม่เรียง widget ที่อาจไม่ใช่ของบนพื้น (เช่น effect บางอย่าง)
+            # แต่ปกติใน world ตอนนี้มีแค่ Player, OreBlock, ItemDrop
+            # เรียงจากแกน y มาก ไป y น้อย (Kivy วาดจาก index 0 ไป -1)
+            # ดังนั้นคน y มากสุด (อยู่ข้างบนสุด) วาดก่อน (index ต้นๆ)
+            children.sort(key=lambda w: w.y, reverse=True)
+            
+            world.clear_widgets()
+            for child in children:
+                world.add_widget(child)
+
         # --- อัปเดตกล้องและ Minimap (ระบบเดิมของคุณ) ---
         world.x, world.y = self.camera.update(
             player_pos=(player.x, player.y),
