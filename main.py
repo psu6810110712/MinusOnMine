@@ -229,7 +229,7 @@ class ItemDrop(Widget):
         is_level_up = self.game_state.add_exp(exp_gained)
         
         if is_level_up:
-            print(f"ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â° LEVEL UP! ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã‚ÂµÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¹Ã¢â€šÂ¬ÃƒÂ Ã‚Â¸Ã‚Â¥ÃƒÂ Ã‚Â¹Ã¢â€šÂ¬ÃƒÂ Ã‚Â¸Ã‚Â§ÃƒÂ Ã‚Â¸Ã‚Â¥ {self.game_state.level} ÃƒÂ Ã‚Â¹Ã‚ÂÃƒÂ Ã‚Â¸Ã‚Â¥ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â§! ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°")
+            print(f"LEVEL UP! You are now level {self.game_state.level}!")
             
         # Refresh the HUD after collecting the drop.
         self.map_screen.update_hud()
