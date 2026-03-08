@@ -7,6 +7,8 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
 from kivy.animation import Animation
 from kivy.clock import Clock
+from kivy.animation import Animation
+from kivy.uix.label import Label
 
 from game_logic import GameState
 from game_data import ORES
@@ -154,7 +156,26 @@ class OreBlock(Widget):
         """Called when the block is mined. Removes itself from the parent."""
         if self.parent:
             self.parent.remove_widget(self)
+class FloatingText(Label):
+    def __init__(self, text_str, start_pos, text_color=(1, 1, 1, 1), font_size='20sp', **kwargs):
+        super().__init__(**kwargs)
+        self.text = text_str
+        self.color = text_color
+        self.font_name = 'assets/fonts/PixelifySans-Bold.ttf' 
+        self.font_size = font_size
+        self.size_hint = (None, None)
+        self.size = (150, 50)
+        self.pos = start_pos
+        self.bold = True
+        
+        # ทำให้ลอยขึ้น 80 พิกเซล และค่อยๆ จางหายไป (opacity=0) ใน 1.5 วินาที
+        anim = Animation(y=self.y + 80, opacity=0, duration=1.5)
+        anim.bind(on_complete=self.remove_myself) # จบแล้วลบตัวเองทิ้ง
+        anim.start(self)
 
+    def remove_myself(self, *args):
+        if self.parent:
+            self.parent.remove_widget(self)
 
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
