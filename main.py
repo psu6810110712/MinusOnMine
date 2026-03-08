@@ -607,15 +607,19 @@ class MapScreen(Screen):
         player.update_animation(dt)
 
         # --- World boundary clamping ---
+        # ผูกขอบเขตแผนที่ให้พอดีกับตาราง Grid (ตารางละ 120px)
+        max_x = (self.game_state.grid_width * 120) - player.width
+        max_y = (self.game_state.grid_height * 120) - player.height
+        
         if new_x < 0:
             new_x = 0
-        elif new_x > world.width - player.width:
-            new_x = world.width - player.width
+        elif new_x > max_x:
+            new_x = max_x
 
         if new_y < 0:
             new_y = 0
-        elif new_y > world.height - player.height:
-            new_y = world.height - player.height
+        elif new_y > max_y:
+            new_y = max_y
 
         # --- ระบบตรวจสอบการชน (หิน/แร่/สิ่งกีดขวาง) ---
         # ปรับ Hitbox ตัวละครให้พอดีช่วงล่างของ Sprite มากขึ้น
