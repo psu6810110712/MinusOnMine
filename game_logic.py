@@ -41,7 +41,8 @@ class GameState:
             ore_pool.append((ore_id, ore_obj.weight))
 
         # 1. เริ่มต้นด้วยแผนที่ว่างเปล่า (None)
-        self.grid_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        self.surface_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        self.underground_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
         
         # 2. ฟังก์ชันเช็กว่าตรงนี้วางอะไรได้ไหม (ไม่ติดน้ำ ไม่ต้นไม้)
         def is_valid_tile(rx, ry):
@@ -77,14 +78,14 @@ class GameState:
             seed_x = random.randint(0, self.grid_width - 1)
             seed_y = random.randint(0, self.grid_height - 1)
             
-            if not is_valid_tile(seed_x, seed_y) or self.grid_map[seed_y][seed_x] is not None:
+            if not is_valid_tile(seed_x, seed_y) or self.underground_map[seed_y][seed_x] is not None:
                 continue # หาที่ลงไม่ได้ ข้ามไป
                 
             # สุ่มชนิดแร่ที่จะเกิดในกลุ่มนี้
             cluster_ore_type = self._weighted_random_ore(ore_pool)
             
             # วางจุดศูนย์กลาง
-            self.grid_map[seed_y][seed_x] = cluster_ore_type
+            self.underground_map[seed_y][seed_x] = cluster_ore_type
             
             # 4. ขยายกลุ่ม (Grow) รอบๆ จุดศูนย์กลาง
             cluster_size = random.randint(3, 8) # รัศมีการเติบโตหรือจำนวนบล็อกในกลุ่ม
@@ -100,10 +101,10 @@ class GameState:
                 random.shuffle(neighbors) # สุ่มลำดับทิศทางให้ดูเป็นธรรมชาติ
                 
                 for nx, ny in neighbors:
-                    if is_valid_tile(nx, ny) and self.grid_map[ny][nx] is None:
+                    if is_valid_tile(nx, ny) and self.underground_map[ny][nx] is None:
                         # มีโอกาส 70% ที่จะลามไปช่องนี้
                         if random.random() < 0.70:
-                            self.grid_map[ny][nx] = cluster_ore_type
+                            self.underground_map[ny][nx] = cluster_ore_type
                             tiles_to_process.append((nx, ny))
                             processed_count += 1
                             if processed_count >= cluster_size:
@@ -114,14 +115,14 @@ class GameState:
         for _ in range(2):
             path_x = random.randint(2, self.grid_width - 3)
             for ry in range(self.grid_height):
-                self.grid_map[ry][path_x] = None
-                self.grid_map[ry][path_x+1] = None
+                self.underground_map[ry][path_x] = None
+                self.underground_map[ry][path_x+1] = None
                 
         for _ in range(2):
             path_y = random.randint(2, self.grid_height - 3)
             for rx in range(self.grid_width):
-                self.grid_map[path_y][rx] = None
-                self.grid_map[path_y+1][rx] = None
+                self.underground_map[path_y][rx] = None
+                self.underground_map[path_y+1][rx] = None
 
     def _weighted_random_ore(self, ore_pool):
         """สุ่มเลือกแร่ตาม weight (weight สูง = ได้บ่อย)"""
