@@ -1,16 +1,9 @@
-# minusonmine.kv - à¹„à¸Ÿà¸¥à¹Œà¸­à¸­à¸à¹à¸šà¸š UI à¸‚à¸­à¸‡à¹€à¸à¸¡ MinusOnMine
-# à¹ƒà¸Šà¹‰ Kivy Language à¸ªà¸³à¸«à¸£à¸±à¸šà¸ˆà¸±à¸”à¸à¸²à¸£ Widget à¹à¸¥à¸° Layout
-
-# =============================================
-# à¸«à¸™à¹‰à¸² Menu (MenuScreen)
-# =============================================
 <MenuScreen>:
     BoxLayout:
         orientation: 'vertical'
         padding: 40
         spacing: 20
 
-        # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¹€à¸‚à¹‰à¸¡
         canvas.before:
             Color:
                 rgba: 0.12, 0.12, 0.18, 1
@@ -18,11 +11,9 @@
                 pos: self.pos
                 size: self.size
 
-        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡à¸”à¹‰à¸²à¸™à¸šà¸™
         Widget:
             size_hint_y: 0.2
 
-        # à¸Šà¸·à¹ˆà¸­à¹€à¸à¸¡
         Label:
             text: 'MinusOnMine'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -32,7 +23,6 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # à¸„à¸³à¸­à¸˜à¸´à¸šà¸²à¸¢à¹€à¸à¸¡
         Label:
             text: 'Welcome Back, Miner!'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -41,11 +31,9 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡
         Widget:
             size_hint_y: 0.2
 
-        # à¸›à¸¸à¹ˆà¸¡à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸¡
         Button:
             text: 'Start Mining'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -57,7 +45,6 @@
             color: 1, 1, 1, 1
             on_press: root.manager.current = 'map'
 
-        # à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² (Settings)
         Button:
             text: 'Settings'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -67,7 +54,6 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.3, 0.3, 0.3, 1
 
-        # à¹€à¸žà¸´à¹ˆà¸¡à¸›à¸¸à¹ˆà¸¡à¸­à¸­à¸à¸ˆà¸²à¸à¹€à¸à¸¡ (Exit)
         Button:
             text: 'Exit Game'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -76,14 +62,12 @@
             size: 400, 65
             pos_hint: {'center_x': 0.5}
             background_color: 0.8, 0.2, 0.2, 1
-            on_press: app.stop() # à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸›à¸´à¸”à¹à¸­à¸› Kivy
+            on_press: app.stop()
 
 
-        # à¸Šà¹ˆà¸­à¸‡à¸§à¹ˆà¸²à¸‡à¸”à¹‰à¸²à¸™à¸¥à¹ˆà¸²à¸‡
         Widget:
             size_hint_y: 0.05
 
-        # à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™
         Label:
             text: 'v0.2.2'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -92,19 +76,15 @@
             size_hint_y: 0.07
 
 
-# =============================================
-# à¸«à¸™à¹‰à¸²à¹à¸œà¸™à¸—à¸µà¹ˆà¸‚à¸¸à¸”à¹à¸£à¹ˆ (MapScreen)
-# =============================================
+
+# à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸à¸‚à¸­à¸‡à¹€à¸à¸¡
 <MapScreen>:
     FloatLayout:
-        # ===== 1. à¹€à¸¥à¹€à¸¢à¸­à¸£à¹Œà¸‚à¸­à¸‡à¹‚à¸¥à¸ (World Layer) =====
-        # à¹€à¸£à¸²à¸ˆà¸°à¸à¸³à¸«à¸™à¸”à¹ƒà¸«à¹‰à¹‚à¸¥à¸à¹ƒà¸«à¸à¹ˆà¸à¸§à¹ˆà¸²à¸«à¸™à¹‰à¸²à¸ˆà¸­à¸¡à¸²à¸à¹† (à¹€à¸Šà¹ˆà¸™ 2400x2400)
         RelativeLayout:
             id: world_layer
             size_hint: None, None
-            size: 2400, 2400  #à¸›à¸£à¸±à¸šà¸„à¸§à¸²à¸¡à¹ƒà¸«à¸à¹ˆà¸‚à¸­à¸‡à¹à¸¡à¸žà¸•à¸£à¸‡à¸™à¸µà¹‰
+            size: 2400, 2400
 
-            # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¹à¸œà¸™à¸—à¸µà¹ˆà¸£à¸¹à¸›à¸ à¸²à¸ž
             canvas.before:
                 Color:
                     rgba: 1, 1, 1, 1 
@@ -113,17 +93,15 @@
                     size: self.size
                     source: 'ground.png' 
 
-            # à¸•à¸±à¸§à¸¥à¸°à¸„à¸£ (à¹ƒà¸«à¹‰à¸­à¸¢à¸¹à¹ˆà¸‚à¹‰à¸²à¸‡à¹ƒà¸™ World)
             PlayerWidget:
                 id: player_character
-                pos: 1000, 800 # à¹ƒà¸«à¹‰à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸´à¸”à¸—à¸µà¹ˆà¸žà¸´à¸à¸±à¸”à¸™à¸µà¹‰
+                pos: 1000, 800
 
 
+        # à¸Šà¸±à¹‰à¸™à¸«à¸¡à¸­à¸
         Widget:
             id: fog_overlay
             size_hint: 1, 1
-        # ===== 2. UI à¸šà¸™à¸«à¸™à¹‰à¸²à¸ˆà¸­ =====
-        # à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™à¸¡à¸¸à¸¡à¸‹à¹‰à¸²à¸¢à¸¥à¹ˆà¸²à¸‡
         Label:
             text: 'v0.2.1'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -133,7 +111,6 @@
             size: 100, 30
             pos_hint: {'x': 0.01, 'y': 0.01}
 
-        # à¸„à¸³à¹à¸™à¸°à¸™à¸³à¸›à¸¸à¹ˆà¸¡à¸Šà¹ˆà¸­à¸‡à¹€à¸à¹‡à¸šà¸‚à¸­à¸‡ (à¸•à¸£à¸‡à¸à¸¥à¸²à¸‡à¸¥à¹ˆà¸²à¸‡)
         Label:
             text: '[ Press I or Tab to open Inventory ]'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -143,7 +120,6 @@
             size: 300, 40
             pos_hint: {'center_x': 0.5, 'y': 0.02}
 
-        # à¸›à¸¸à¹ˆà¸¡à¸à¸¥à¸±à¸šà¹€à¸¡à¸™à¸¹ (à¸­à¸¢à¸¹à¹ˆà¸™à¸­à¸ World à¹€à¸§à¸¥à¸²à¸à¸¥à¹‰à¸­à¸‡à¹€à¸¥à¸·à¹ˆà¸­à¸™ à¸›à¸¸à¹ˆà¸¡à¸ˆà¸°à¹„à¸¡à¹ˆà¹€à¸¥à¸·à¹ˆà¸­à¸™à¸•à¸²à¸¡)
         Button:
             text: 'Back to Menu'
             font_name: 'assets/fonts/PixelifySans-Bold.ttf'
@@ -153,28 +129,23 @@
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
 
-        # ===== 3. Minimap (à¸‹à¹‰à¸²à¸¢à¸šà¸™) =====
         Widget:
             id: minimap_widget
             size_hint: None, None
             size: 200, 200
             pos_hint: {'x': 0.01, 'top': 0.98}
-            # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡ minimap
             canvas.before:
-                # à¸à¸£à¸­à¸šà¸™à¸­à¸ (à¸‚à¸­à¸šà¸ªà¸µà¸‚à¸²à¸§)
                 Color:
                     rgba: 0.8, 0.8, 0.8, 0.6
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸”à¸³
                 Color:
                     rgba: 0.05, 0.05, 0.08, 0.85
                 Rectangle:
                     pos: self.x + 2, self.y + 2
                     size: self.width - 4, self.height - 4
 
-        # ===== 4. Inventory Overlay =====
         BoxLayout:
             id: inventory_overlay
             orientation: 'vertical'
@@ -182,7 +153,6 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             padding: dp(25)
             spacing: dp(15)
-            # Hide by default
             opacity: 0
             disabled: True
             
@@ -193,14 +163,12 @@
                     pos: self.pos
                     size: self.size
                     radius: [20]
-                # Outer Border
                 Color:
                     rgba: 0.8, 0.6, 0.2, 1  # Golden border
                 Line:
                     rounded_rectangle: (self.x, self.y, self.width, self.height, 20)
                     width: dp(2)
                     
-            # Header Layout (Title + Capacity + Money)
             BoxLayout:
                 size_hint_y: 0.15
                 orientation: 'horizontal'
@@ -236,7 +204,6 @@
                         valign: 'middle'
                         text_size: self.size
                         
-            # Subtle divider line
             Widget:
                 size_hint_y: None
                 height: dp(2)
@@ -251,16 +218,12 @@
                 size_hint_y: 0.85
                 GridLayout:
                     id: inventory_grid
-                    # Use adaptive columns based on width, min 4 cols
                     cols: max(4, int(self.width / dp(140)))
                     padding: dp(15)
                     spacing: dp(20)
                     size_hint_y: None
                     height: self.minimum_height
         
-        # ==========================================
-        # à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸‚à¸²à¸¢à¹à¸£à¹ˆà¹ƒà¸«à¹‰ NPC (Sell Overlay)
-        # ==========================================
         SellOverlay:
             id: sell_overlay
             orientation: 'vertical'
@@ -291,7 +254,6 @@
                 color: 0.4, 0.8, 1, 1
                 size_hint_y: 0.1
 
-            # à¸¥à¸´à¸ªà¸•à¹Œà¸ªà¸´à¸™à¸„à¹‰à¸²
             ScrollView:
                 id: sell_scroll_view
                 size_hint_y: 0.7
@@ -305,7 +267,6 @@
                     spacing: dp(10)
                     padding: dp(10)
 
-            # à¸ªà¹ˆà¸§à¸™à¸ªà¸£à¸¸à¸›à¹à¸¥à¸°à¸›à¸¸à¹ˆà¸¡à¸à¸”à¸¢à¸·à¸™à¸¢à¸±à¸™
             BoxLayout:
                 size_hint_y: 0.2
                 orientation: 'horizontal'
@@ -339,9 +300,6 @@
                     font_size: '20sp'
                     background_color: 0.2, 0.7, 0.3, 1
                     on_press: root.confirm_sell()
-        # ==========================================
-        # à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸­à¸±à¸›à¹€à¸à¸£à¸”à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸¡à¸·à¸­ (Upgrade Overlay)
-        # ==========================================
         BoxLayout:
             id: upgrade_overlay
             orientation: 'vertical'
@@ -349,25 +307,25 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             padding: 20
             spacing: 15
-            disabled: True   # à¸‹à¹ˆà¸­à¸™à¹„à¸§à¹‰à¸•à¸­à¸™à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸à¸¡
+            disabled: True
             opacity: 0
             
             canvas.before:
                 Color:
-                    rgba: 0.15, 0.15, 0.15, 0.95  # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¹€à¸—à¸²à¹€à¸‚à¹‰à¸¡à¹‚à¸›à¸£à¹ˆà¸‡à¹à¸ªà¸‡
+                    rgba: 0.15, 0.15, 0.15, 0.95
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
                     radius: [15]
                 Color:
-                    rgba: 1, 0.8, 0, 1  # à¸‚à¸­à¸šà¸ªà¸µà¸—à¸­à¸‡
+                    rgba: 1, 0.8, 0, 1
                 Line:
                     rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
                     width: 2
 
             Label:
                 text: 'BLACKSMITH'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # à¹ƒà¸Šà¹‰à¸Ÿà¸­à¸™à¸•à¹Œà¸‚à¸­à¸‡à¸„à¸¸à¸“
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '35sp'
                 color: 1, 0.8, 0, 1
                 size_hint_y: 0.2
@@ -389,16 +347,15 @@
                 background_color: 0.2, 0.7, 0.3, 1
                 on_press: root.buy_upgrade()
 
-        # HUD: à¹à¸ªà¸”à¸‡ Level, EXP à¹à¸¥à¸° Money (à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸šà¸™)
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
             size: 240, 140
-            pos_hint: {'right': 0.99, 'top': 0.88} # à¸§à¸²à¸‡à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸šà¸™ (à¹ƒà¸•à¹‰à¸›à¸¸à¹ˆà¸¡ Back to Menu)
+            pos_hint: {'right': 0.99, 'top': 0.88}
             padding: 10
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7  # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸ªà¸µà¸”à¸³à¹‚à¸›à¸£à¹ˆà¸‡à¹à¸ªà¸‡
+                    rgba: 0.1, 0.1, 0.1, 0.7
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
@@ -409,7 +366,7 @@
                 text: 'Lv. 1'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '22sp'
-                color: 1, 0.8, 0, 1  # à¸ªà¸µà¸—à¸­à¸‡
+                color: 1, 0.8, 0, 1
                 text_size: self.size
                 halign: 'left'
                 valign: 'bottom'
@@ -444,9 +401,8 @@
                 halign: 'left'
                 valign: 'top'
 
-# =============================================
-# à¸ªà¸£à¹‰à¸²à¸‡à¸«à¸™à¹‰à¸²à¸•à¸²à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£ (Player)
-# =============================================
+
+# à¸•à¸±à¸§à¸¥à¸°à¸„à¸£
 <PlayerWidget>:
     size_hint: None, None
     size: 100, 100
@@ -459,34 +415,29 @@
             source: root.image_source
 
 
-# =============================================
-# à¸Šà¹ˆà¸­à¸‡à¹€à¸à¹‡à¸šà¸‚à¸­à¸‡ (Inventory Slot)
-# =============================================
+
+# à¸Šà¹ˆà¸­à¸‡à¹€à¸à¹‡à¸šà¸‚à¸­à¸‡
 <InventorySlot>:
     size_hint: None, None
     size: 80, 80
     
     canvas.before:
-        # à¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸Šà¹ˆà¸­à¸‡à¹ƒà¸ªà¹ˆà¸‚à¸­à¸‡
         Color:
             rgba: 0.25, 0.25, 0.3, 1
         Rectangle:
             pos: self.pos
             size: self.size
-        # à¸à¸£à¸­à¸š
         Color:
             rgba: 0.5, 0.5, 0.5, 1
         Line:
             rectangle: (self.x, self.y, self.width, self.height)
             width: 1.5
 
-    # à¸£à¸¹à¸›à¸ à¸²à¸žà¹„à¸­à¹€à¸—à¸¡à¸•à¸£à¸‡à¸à¸¥à¸²à¸‡
     Image:
         source: root.item_image
         size: 50, 50
         pos: root.x + 15, root.y + 20
 
-        # à¸•à¸±à¸§à¹€à¸¥à¸‚à¸£à¸°à¸šà¸¸à¸ˆà¸³à¸™à¸§à¸™à¸¡à¸¸à¸¡à¸‚à¸§à¸²à¸¥à¹ˆà¸²à¸‡
         Label:
             text: root.item_count
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -495,9 +446,8 @@
             size: 20, 20
             pos: root.right - 25, root.y + 5
 
-# =============================================
-# à¹à¸–à¸§à¸ªà¸³à¸«à¸£à¸±à¸šà¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸ˆà¸³à¸™à¸§à¸™à¸à¸²à¸£à¸‚à¸²à¸¢à¹à¸£à¹ˆ (Sell Menu)
-# =============================================
+
+# à¹à¸–à¸§à¸‚à¸²à¸¢à¸‚à¸­à¸‡
 <SellItemRow>:
     size_hint_y: None
     height: dp(80) # Increased height
@@ -511,12 +461,10 @@
             size: self.size
             radius: [10]
 
-    # à¸£à¸¹à¸›à¹„à¸­à¹€à¸—à¸¡
     Image:
         source: root.item_image
         size_hint_x: 0.12
 
-    # à¸Šà¸·à¹ˆà¸­à¹à¸¥à¸°à¸ˆà¸³à¸™à¸§à¸™à¸—à¸µà¹ˆà¸¡à¸µ
     BoxLayout:
         orientation: 'vertical'
         size_hint_x: 0.2
@@ -536,7 +484,6 @@
             halign: 'left'
             valign: 'top'
 
-    # Controls: - Slider + MAX
     BoxLayout:
         orientation: 'horizontal'
         size_hint_x: 0.5
@@ -581,11 +528,9 @@
             background_color: 0.2, 0.5, 0.8, 1
             on_press: root.set_max()
 
-    # à¸£à¸²à¸„à¸²à¸£à¸§à¸¡
     Label:
         text: f"${root.subtotal}"
         font_name: 'assets/fonts/PixelifySans-Bold.ttf'
         font_size: '22sp'
         color: 0.2, 0.9, 0.4, 1
         size_hint_x: 0.18
-
