@@ -125,3 +125,13 @@ class GameState:
             self.current_stamina -= amount
             return True
         return False
+    
+    def regenerate_stamina(self, amount):
+        """ฟื้นฟู Stamina คืนค่า True ถ้ามีการฟื้นฟู (ยังไม่เต็มหลอด)"""
+        if self.current_stamina < self.max_stamina:
+            self.current_stamina += amount
+            # ดักไว้ไม่ให้พลังงานล้นเกินหลอด (Max)
+            if self.current_stamina > self.max_stamina:
+                self.current_stamina = self.max_stamina
+            return True
+        return False
