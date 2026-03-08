@@ -618,8 +618,9 @@ class MapScreen(Screen):
             new_y = world.height - player.height
 
         # --- ระบบตรวจสอบการชน (หิน/แร่/สิ่งกีดขวาง) ---
-        inset_x = 25  
-        inset_y = 20  
+        # ปรับ Hitbox ตัวละครให้พอดีช่วงล่างของ Sprite มากขึ้น
+        inset_x = 35  # บีบด้านซ้ายขวาเข้ามา
+        inset_y = 15  # บีบด้านบนล่าง (ให้หัวทับของได้นิดหน่อย)
         pw = player.width - inset_x * 2
         ph = player.height - inset_y * 2
 
@@ -647,15 +648,15 @@ class MapScreen(Screen):
                     # ตรวจสอบว่าพิกัดยังอยู่ในขอบเขตแผนที่
                     if gs.grid_map[grid_y][grid_x] is not None:
                                 # ==========================================
-                                # อัปเดตใหม่: บีบกรอบการชน (Hitbox) ให้เล็กกว่ารูปภาพจริง
+                                # อัปเดตใหม่: ปรับให้สมดุลกับ 80px Visual Size
                                 # ==========================================
-                                visual_size = 45 
+                                visual_size = 80 
                                 offset = (120 - visual_size) / 2
                                 
                                 # --- ปรับระยะความชิดตรงนี้ครับ ---
                                 # ยิ่งใส่เลขเยอะ ยิ่งเดินทะลุเข้าไปใกล้แร่ได้มากขึ้น
                                 ore_inset_x = 10  # ยอมให้เดินซ้อนทับด้านซ้าย/ขวา ได้ 10 พิกเซล
-                                ore_inset_y = 15  # ยอมให้เดินซ้อนทับด้านบน/ล่าง ได้ 15 พิกเซล
+                                ore_inset_y = 20  # ยอมให้ทับด้านบน/ล่าง ได้ลึกขึ้น (ตัวละครเดินบังโคนต้นแร่ได้)
                                 
                                 ore_left = (grid_x * 120) + offset + ore_inset_x
                                 ore_right = (grid_x * 120) + offset + visual_size - ore_inset_x
