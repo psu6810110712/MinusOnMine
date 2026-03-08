@@ -1,16 +1,9 @@
-# minusonmine.kv - ไฟล์ออกแบบ UI ของเกม MinusOnMine
-# ใช้ Kivy Language สำหรับจัดการ Widget และ Layout
-
-# =============================================
-# หน้า Menu (MenuScreen)
-# =============================================
 <MenuScreen>:
     BoxLayout:
         orientation: 'vertical'
         padding: 40
         spacing: 20
 
-        # พื้นหลังสีเข้ม
         canvas.before:
             Color:
                 rgba: 0.12, 0.12, 0.18, 1
@@ -18,11 +11,9 @@
                 pos: self.pos
                 size: self.size
 
-        # ช่องว่างด้านบน
         Widget:
             size_hint_y: 0.2
 
-        # ชื่อเกม
         Label:
             text: 'MinusOnMine'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -32,7 +23,6 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # คำอธิบายเกม
         Label:
             text: 'Welcome Back, Miner!'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -41,11 +31,9 @@
             size_hint_y: None
             height: self.texture_size[1]
 
-        # ช่องว่าง
         Widget:
             size_hint_y: 0.2
 
-        # ปุ่มเริ่มเกม
         Button:
             text: 'Start Mining'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -57,7 +45,6 @@
             color: 1, 1, 1, 1
             on_press: root.manager.current = 'map'
 
-        # เพิ่มปุ่มตั้งค่า (Settings)
         Button:
             text: 'Settings'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -67,7 +54,6 @@
             pos_hint: {'center_x': 0.5}
             background_color: 0.3, 0.3, 0.3, 1
 
-        # เพิ่มปุ่มออกจากเกม (Exit)
         Button:
             text: 'Exit Game'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -76,14 +62,12 @@
             size: 400, 65
             pos_hint: {'center_x': 0.5}
             background_color: 0.8, 0.2, 0.2, 1
-            on_press: app.stop() # คำสั่งปิดแอป Kivy
+            on_press: app.stop()
 
 
-        # ช่องว่างด้านล่าง
         Widget:
             size_hint_y: 0.05
 
-        # เวอร์ชัน
         Label:
             text: 'v0.2.2'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -92,19 +76,14 @@
             size_hint_y: 0.07
 
 
-# =============================================
-# หน้าแผนที่ขุดแร่ (MapScreen)
-# =============================================
+
 <MapScreen>:
     FloatLayout:
-        # ===== 1. เลเยอร์ของโลก (World Layer) =====
-        # เราจะกำหนดให้โลกใหญ่กว่าหน้าจอมากๆ (เช่น 2400x2400)
         RelativeLayout:
             id: world_layer
             size_hint: None, None
-            size: 2400, 2400  #ปรับความใหญ่ของแมพตรงนี้
+            size: 2400, 2400
 
-            # พื้นหลังแผนที่รูปภาพ
             canvas.before:
                 Color:
                     rgba: 1, 1, 1, 1 
@@ -113,13 +92,14 @@
                     size: self.size
                     source: 'ground.png' 
 
-            # ตัวละคร (ให้อยู่ข้างใน World)
             PlayerWidget:
                 id: player_character
-                pos: 1000, 800 # ให้เริ่มเกิดที่พิกัดนี้
+                pos: 1000, 800
 
-        # ===== 2. UI บนหน้าจอ =====
-        # เวอร์ชันมุมซ้ายล่าง
+
+        Widget:
+            id: fog_overlay
+            size_hint: 1, 1
         Label:
             text: 'v0.2.1'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -129,7 +109,6 @@
             size: 100, 30
             pos_hint: {'x': 0.01, 'y': 0.01}
 
-        # คำแนะนำปุ่มช่องเก็บของ (ตรงกลางล่าง)
         Label:
             text: '[ Press I or Tab to open Inventory ]'
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
@@ -139,7 +118,6 @@
             size: 300, 40
             pos_hint: {'center_x': 0.5, 'y': 0.02}
 
-        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
         Button:
             text: 'Back to Menu'
             font_name: 'assets/fonts/PixelifySans-Bold.ttf'
@@ -149,122 +127,177 @@
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
 
-        # ปุ่มออกจากเหมือง (ซ่อนไว้จนกว่าจะกดลงเหมือง)
-        Button:
-            id: btn_exit_mine
-            text: 'Exit Mine'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.88}
-            background_color: 0.2, 0.2, 0.8, 1
-            opacity: 0
-            disabled: True
-            on_press: root.exit_mine()
-
-        # ===== 3. Minimap (ซ้ายบน) =====
         Widget:
             id: minimap_widget
             size_hint: None, None
             size: 200, 200
             pos_hint: {'x': 0.01, 'top': 0.98}
-            # พื้นหลัง minimap
             canvas.before:
-                # กรอบนอก (ขอบสีขาว)
                 Color:
                     rgba: 0.8, 0.8, 0.8, 0.6
                 Rectangle:
                     pos: self.pos
                     size: self.size
-                # พื้นหลังดำ
                 Color:
                     rgba: 0.05, 0.05, 0.08, 0.85
                 Rectangle:
                     pos: self.x + 2, self.y + 2
                     size: self.width - 4, self.height - 4
 
-        # ===== 4. Inventory Overlay =====
         BoxLayout:
             id: inventory_overlay
             orientation: 'vertical'
-            size_hint: 0.8, 0.8
+            size_hint: 0.85, 0.85
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            padding: 20
-            spacing: 10
-            # Hide by default
+            padding: dp(25)
+            spacing: dp(15)
             opacity: 0
             disabled: True
             
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.15, 0.9
-                Rectangle:
+                    rgba: 0.15, 0.15, 0.15, 0.95  # Dark subtle background
+                RoundedRectangle:
                     pos: self.pos
                     size: self.size
+                    radius: [20]
+                Color:
+                    rgba: 0.8, 0.6, 0.2, 1  # Golden border
+                Line:
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, 20)
+                    width: dp(2)
                     
-            Label:
-                text: 'Inventory'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '32sp'
+            BoxLayout:
                 size_hint_y: 0.15
+                orientation: 'horizontal'
+                
+                Label:
+                    text: 'INVENTORY'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '36sp'
+                    color: 1, 0.9, 0.4, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 0.5
+                    Label:
+                        id: inventory_capacity_label
+                        text: 'Capacity: 0 / 20'
+                        font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                        font_size: '20sp'
+                        color: 0.8, 0.8, 0.8, 1
+                        halign: 'right'
+                        valign: 'middle'
+                        text_size: self.size
+                    Label:
+                        id: inventory_money_label
+                        text: 'Money: '
+                        font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                        font_size: '22sp'
+                        color: 0.2, 0.9, 0.4, 1
+                        halign: 'right'
+                        valign: 'middle'
+                        text_size: self.size
+                        
+            Widget:
+                size_hint_y: None
+                height: dp(2)
+                canvas:
+                    Color:
+                        rgba: 0.4, 0.4, 0.4, 0.5
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
                 
             ScrollView:
                 size_hint_y: 0.85
                 GridLayout:
                     id: inventory_grid
-                    cols: 5
-                    padding: 10
-                    spacing: 15
+                    cols: max(4, int(self.width / dp(140)))
+                    padding: dp(15)
+                    spacing: dp(20)
                     size_hint_y: None
                     height: self.minimum_height
         
-        # ปุ่มกลับเมนู (อยู่นอก World เวลากล้องเลื่อน ปุ่มจะไม่เลื่อนตาม)
-        Button:
-            text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.98}
-            background_color: 0.8, 0.2, 0.2, 1
-            on_press: root.manager.current = 'menu'
-
-        # ปุ่มออกจากเหมือง (ซ่อนไว้จนกว่าจะกดลงเหมือง)
-        Button:
-            id: btn_exit_mine
-            text: 'Exit Mine'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.88}
-            background_color: 0.2, 0.2, 0.8, 1
+        SellOverlay:
+            id: sell_overlay
+            orientation: 'vertical'
+            size_hint: 0.8, 0.9
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            padding: 20
+            spacing: 15
             opacity: 0
             disabled: True
-            on_press: root.exit_mine()
-
-        # ===== 3. Minimap (ซ้ายบน) =====
-        Widget:
-            id: minimap_widget
-            size_hint: None, None
-            size: 200, 200
-            pos_hint: {'x': 0.01, 'top': 0.98}
-            # พื้นหลัง minimap
+            
             canvas.before:
-                # กรอบนอก (ขอบสีขาว)
                 Color:
-                    rgba: 0.8, 0.8, 0.8, 0.6
-                Rectangle:
+                    rgba: 0.1, 0.1, 0.12, 0.98
+                RoundedRectangle:
                     pos: self.pos
                     size: self.size
-                # พื้นหลังดำ
+                    radius: [15]
                 Color:
-                    rgba: 0.05, 0.05, 0.08, 0.85
-                Rectangle:
-                    pos: self.x + 2, self.y + 2
-                    size: self.width - 4, self.height - 4
-        
-        # ==========================================
-        # หน้าต่างอัปเกรดเครื่องมือ (Upgrade Overlay)
-        # ==========================================
+                    rgba: 0.2, 0.6, 0.9, 1
+                Line:
+                    rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
+                    width: 2
+
+            Label:
+                text: 'MERCHANT'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '35sp'
+                color: 0.4, 0.8, 1, 1
+                size_hint_y: 0.1
+
+            ScrollView:
+                id: sell_scroll_view
+                size_hint_y: 0.7
+                do_scroll_x: False
+                do_scroll_y: True
+                BoxLayout:
+                    id: sell_items_container
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    padding: dp(10)
+
+            BoxLayout:
+                size_hint_y: 0.2
+                orientation: 'horizontal'
+                spacing: 20
+                Label:
+                    id: total_sell_label
+                    text: 'Total Earned: $0'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '24sp'
+                    color: 0.2, 0.9, 0.4, 1
+                
+                Button:
+                    text: 'CLOSE'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '20sp'
+                    background_color: 0.8, 0.2, 0.2, 1
+                    on_press: root.toggle_sell_menu()
+
+                Button:
+                    id: buy_torch_button
+                    text: 'BUY TORCH'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '20sp'
+                    background_color: 0.95, 0.65, 0.2, 1
+                    on_press: root.buy_torch()
+                    disabled: True
+
+                Button:
+                    text: 'CONFIRM SELL'
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '20sp'
+                    background_color: 0.2, 0.7, 0.3, 1
+                    on_press: root.confirm_sell()
         BoxLayout:
             id: upgrade_overlay
             orientation: 'vertical'
@@ -272,25 +305,25 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             padding: 20
             spacing: 15
-            disabled: True   # ซ่อนไว้ตอนเริ่มเกม
+            disabled: True
             opacity: 0
             
             canvas.before:
                 Color:
-                    rgba: 0.15, 0.15, 0.15, 0.95  # พื้นหลังสีเทาเข้มโปร่งแสง
+                    rgba: 0.15, 0.15, 0.15, 0.95
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
                     radius: [15]
                 Color:
-                    rgba: 1, 0.8, 0, 1  # ขอบสีทอง
+                    rgba: 1, 0.8, 0, 1
                 Line:
                     rounded_rectangle: [self.x, self.y, self.width, self.height, 15]
                     width: 2
 
             Label:
                 text: 'BLACKSMITH'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # ใช้ฟอนต์ของคุณ
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '35sp'
                 color: 1, 0.8, 0, 1
                 size_hint_y: 0.2
@@ -312,19 +345,15 @@
                 background_color: 0.2, 0.7, 0.3, 1
                 on_press: root.buy_upgrade()
 
-        # HUD: แสดง Level และ EXP (มุมซ้ายบน)
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-            
-            # 1. ขยายความสูงกล่องตรงนี้ครับ (จาก 70 เป็น 110)
-            size: 240, 120
-            
-            pos_hint: {'x': 0.01, 'top': 0.75} 
+            size: 240, 140
+            pos_hint: {'right': 0.99, 'top': 0.88}
             padding: 10
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7 
+                    rgba: 0.1, 0.1, 0.1, 0.7
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
@@ -333,36 +362,53 @@
             Label:
                 id: level_label
                 text: 'Lv. 1'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' 
-                font_size: '24sp'
-                color: 1, 0.8, 0, 1  
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '22sp'
+                color: 1, 0.8, 0, 1
                 text_size: self.size
                 halign: 'left'
-                valign: 'middle'  # 2. แก้เป็น middle
+                valign: 'bottom'
 
             Label:
                 id: exp_label
                 text: 'EXP: 0 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '16sp'
+                font_size: '14sp'
                 color: 1, 1, 1, 1
                 text_size: self.size
                 halign: 'left'
-                valign: 'middle'  # 2. แก้เป็น middle
+                valign: 'middle'
+
+            Label:
+                id: hud_money_label
+                text: 'Money: $0'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '18sp'
+                color: 0.2, 0.9, 0.4, 1
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+
+            Label:
+                id: hud_torch_label
+                text: 'Torch: 0 | 00:00'
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                font_size: '16sp'
+                color: 1, 0.85, 0.45, 1
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
 
             Label:
                 id: stamina_label
                 text: 'Energy: 100 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '16sp'
-                color: 0.2, 0.8, 1, 1  
+                color: 0.2, 0.8, 1, 1
                 text_size: self.size
                 halign: 'left'
-                valign: 'middle'  # 2. แก้เป็น middle
+                valign: 'top'
 
-# =============================================
-# สร้างหน้าตาของตัวละคร (Player)
-# =============================================
 <PlayerWidget>:
     size_hint: None, None
     size: 100, 100
@@ -375,42 +421,120 @@
             source: root.image_source
 
 
-# =============================================
-# ช่องเก็บของ (Inventory Slot)
-# =============================================
+
 <InventorySlot>:
     size_hint: None, None
     size: 80, 80
     
     canvas.before:
-        # พื้นหลังช่องใส่ของ
         Color:
             rgba: 0.25, 0.25, 0.3, 1
         Rectangle:
             pos: self.pos
             size: self.size
-        # กรอบ
         Color:
             rgba: 0.5, 0.5, 0.5, 1
         Line:
             rectangle: (self.x, self.y, self.width, self.height)
             width: 1.5
 
-    # รูปภาพไอเทมตรงกลาง
     Image:
         source: root.item_image
         size: 50, 50
         pos: root.x + 15, root.y + 20
 
-    # ตัวเลขระบุจำนวนมุมขวาล่าง
-    Label:
-        text: root.item_count
-        font_name: 'assets/fonts/PixelifySans-Medium.ttf'
-        font_size: '16sp'
-        color: 1, 1, 1, 1
-        size: 20, 20
-        pos: root.right - 25, root.y + 5
+        Label:
+            text: root.item_count
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '16sp'
+            color: 1, 1, 1, 1
+            size: 20, 20
+            pos: root.right - 25, root.y + 5
 
+
+<SellItemRow>:
+    size_hint_y: None
+    height: dp(80) # Increased height
+    spacing: dp(15)
+    padding: [dp(10), dp(5)]
+    canvas.before:
+        Color:
+            rgba: 0.18, 0.18, 0.22, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [10]
+
+    Image:
+        source: root.item_image
+        size_hint_x: 0.12
+
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: 0.2
+        Label:
+            text: root.ore_name.capitalize()
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            font_size: '20sp'
+            text_size: self.size
+            halign: 'left'
+            valign: 'bottom'
+        Label:
+            text: f"Owned: {root.max_amount}"
+            font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+            font_size: '14sp'
+            color: 0.7, 0.7, 0.7, 1
+            text_size: self.size
+            halign: 'left'
+            valign: 'top'
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_x: 0.5
+        spacing: dp(8)
         
+        Button:
+            text: '-'
+            size_hint_x: None
+            width: dp(40)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.6, 0.3, 0.3, 1
+            on_press: root.adjust_quantity(-1)
+            
+        BoxLayout:
+            orientation: 'vertical'
+            Slider:
+                id: sell_slider
+                min: 0
+                max: root.max_amount
+                step: 1
+                value: root.current_selected_amount
+                on_value: root.on_slider_change(self.value)
+            Label:
+                text: f"Sell: {int(sell_slider.value)}"
+                font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                font_size: '16sp'
+                size_hint_y: 0.4
 
+        Button:
+            text: '+'
+            size_hint_x: None
+            width: dp(40)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.3, 0.6, 0.3, 1
+            on_press: root.adjust_quantity(1)
 
+        Button:
+            text: 'MAX'
+            size_hint_x: None
+            width: dp(60)
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            background_color: 0.2, 0.5, 0.8, 1
+            on_press: root.set_max()
+
+    Label:
+        text: f"${root.subtotal}"
+        font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+        font_size: '22sp'
+        color: 0.2, 0.9, 0.4, 1
+        size_hint_x: 0.18

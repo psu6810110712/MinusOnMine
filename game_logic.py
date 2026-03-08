@@ -1,20 +1,25 @@
-# game_logic.py - Core game state และ map generation
-# สำหรับเกม MinusOnMine (Top-Down Mining RPG)
+﻿import random
 
-import random
-from game_data import ORES, MAP_WIDTH, MAP_HEIGHT, WATER_MAP, COLLISION_GRID_SIZE, COLLISION_TILE_SIZE
+from game_data import (
+    COLLISION_GRID_SIZE,
+    COLLISION_TILE_SIZE,
+    MAP_HEIGHT,
+    MAP_WIDTH,
+    ORES,
+    WATER_MAP,
+)
 
 
 class GameState:
-    """เก็บสถานะเกมทั้งหมด: map, ผู้เล่น, เงิน, inventory"""
+    """Store the shared gameplay state."""
 
     def __init__(self):
         self.grid_width = MAP_WIDTH
         self.grid_height = MAP_HEIGHT
         self.money = 0
-        self.inventory = {}  # {"stone": 3, "gold": 1, ...}
+        self.inventory = {}
         self.forbidden_grids = [
-            (11, 10), (13, 11), (11, 12), (13, 13), 
+            (11, 10), (13, 11), (11, 12), (13, 13),
             (13, 14), (14, 14), (15, 14), (15, 13),
             (9, 9), (9, 10), (10, 10), (9, 11), (10, 11),
             (13, 10), (13, 9), (15, 11), (16, 12), (10, 9),
@@ -36,153 +41,148 @@ class GameState:
         """คืนค่าแผนที่ อิงตามความลึก (0: บนดิน, 1: ใต้ดิน)"""
         return self.surface_map if self.current_depth == 0 else self.underground_map
 
-    def generate_maps(self):
-        """สุ่มวางแร่บน grid ให้เกิดเป็นกลุ่มๆ (Clustered)"""
+        self.grid_map = []
+        self.generate_map()
+
+        self.level = 1
+        self.current_exp = 0
+        self.exp_to_next_level = 100
+        self.max_stamina = 100
+        self.current_stamina = 100
+
+        self.current_capacity = 0
+        self.max_capacity = 20
+
+        self.torch_count = 0
+        self.torch_time_left = 0.0
+        self.base_vision_radius = 210
+        self.torch_vision_radius = 560
+        self.torch_duration_seconds = 180
+        self.torch_price = 75
+
+    def add_to_inventory(self, ore_type):
+        if self.current_capacity < self.max_capacity:
+            self.inventory[ore_type] = self.inventory.get(ore_type, 0) + 1
+            self.current_capacity += 1
+            return True
+        return False
+
+    def has_active_torch(self):
+        return self.torch_time_left > 0
+
+    def can_use_torch(self):
+        return self.torch_count > 0
+
+    def use_torch(self):
+        if not self.can_use_torch():
+            return False
+
+        # หยิบคบเพลิงมาเริ่มใช้
+        self.torch_count -= 1
+        self.torch_time_left = float(self.torch_duration_seconds)
+        return True
+
+    def tick_torch(self, dt):
+        if not self.has_active_torch():
+            return False
+
+        # นับเวลาคบเพลิงที่เหลือ
+        self.torch_time_left = max(0.0, self.torch_time_left - dt)
+        return self.torch_time_left <= 0
+
+    def get_vision_radius(self):
+        if self.has_active_torch():
+            return self.torch_vision_radius
+        # ไม่มีคบเพลิงก็ยังเห็นใกล้ ๆ
+        return self.base_vision_radius
+
+    def buy_torch(self):
+        if self.money < self.torch_price:
+            return False
+
+        self.money -= self.torch_price
+        self.torch_count += 1
+        return True
+
+    def generate_map(self):
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
             ore_pool.append((ore_id, ore_obj.weight))
 
-        # 1. เริ่มต้นด้วยแผนที่ว่างเปล่า (None)
-        self.surface_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
-        self.underground_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
-        
-        # 2. ฟังก์ชันเช็กว่าตรงนี้วางอะไรได้ไหม (ไม่ติดน้ำ ไม่ต้นไม้)
-        def is_valid_tile(rx, ry):
-            if rx < 0 or rx >= self.grid_width or ry < 0 or ry >= self.grid_height:
-                return False
-            if (rx, ry) in self.forbidden_grids:
-                return False
-                
-            # เช็กจุดเกิด (Safe Spawn Zone) ให้ว่างเปล่าเสมอ
-            # จุดเกิดคือพิกัด Pixel (1000, 800) -> Grid ประมาณ (8, 6)
-            spawn_x, spawn_y = int(1000/120), int(800/120)
-            if abs(rx - spawn_x) <= 2 and abs(ry - spawn_y) <= 2:
-                return False # ในระยะ 5x5 รอบจุดเกิด ห้ามมีของแร่
-            
-            # เช็กน้ำ (Water)
-            center_px = (rx * 120) + 60
-            center_py = (ry * 120) + 60
-            safe_margin = 55
-            scan_points = [
-                (center_px, center_py),
-                (center_px - safe_margin, center_py), (center_px + safe_margin, center_py),
-                (center_px, center_py - safe_margin), (center_px, center_py + safe_margin)
-            ]
-            if hasattr(self, 'is_water_tile'):
+        self.grid_map = []
+        for y in range(self.grid_height):
+            row = []
+            for x in range(self.grid_width):
+                center_px = (x * 120) + 60
+                center_py = (y * 120) + 60
+
+                if (x, y) in self.forbidden_grids:
+                    row.append(None)
+                    continue
+
+                safe_margin = 55
+                scan_points = [
+                    (center_px, center_py),
+                    (center_px - safe_margin, center_py),
+                    (center_px + safe_margin, center_py),
+                    (center_px, center_py - safe_margin),
+                    (center_px, center_py + safe_margin),
+                ]
+
+                is_near_water = False
                 for px, py in scan_points:
                     if self.is_water_tile(px, py):
-                        return False
-            return True
+                        is_near_water = True
+                        break
 
-        # 3. สุ่มหา "จุดศูนย์กลาง" (Seeds) ของแต่ละกลุ่มแร่
-        num_clusters = 15  # จำนวนกลุ่มแร่ในแผนที่
-        for _ in range(num_clusters):
-            seed_x = random.randint(0, self.grid_width - 1)
-            seed_y = random.randint(0, self.grid_height - 1)
-            
-            if not is_valid_tile(seed_x, seed_y) or self.underground_map[seed_y][seed_x] is not None:
-                continue # หาที่ลงไม่ได้ ข้ามไป
-                
-            # สุ่มชนิดแร่ที่จะเกิดในกลุ่มนี้
-            cluster_ore_type = self._weighted_random_ore(ore_pool)
-            
-            # วางจุดศูนย์กลาง
-            self.underground_map[seed_y][seed_x] = cluster_ore_type
-            
-            # 4. ขยายกลุ่ม (Grow) รอบๆ จุดศูนย์กลาง
-            cluster_size = random.randint(3, 8) # รัศมีการเติบโตหรือจำนวนบล็อกในกลุ่ม
-            tiles_to_process = [(seed_x, seed_y)]
-            processed_count = 1
-            
-            while tiles_to_process and processed_count < cluster_size:
-                # หยิบ tile มาแพร่เชื้อ
-                curr_x, curr_y = tiles_to_process.pop(0)
-                
-                # เช็ก 4 ทิศ (บน ล่าง ซ้าย ขวา)
-                neighbors = [(curr_x, curr_y-1), (curr_x, curr_y+1), (curr_x-1, curr_y), (curr_x+1, curr_y)]
-                random.shuffle(neighbors) # สุ่มลำดับทิศทางให้ดูเป็นธรรมชาติ
-                
-                for nx, ny in neighbors:
-                    if is_valid_tile(nx, ny) and self.underground_map[ny][nx] is None:
-                        # มีโอกาส 70% ที่จะลามไปช่องนี้
-                        if random.random() < 0.70:
-                            self.underground_map[ny][nx] = cluster_ore_type
-                            tiles_to_process.append((nx, ny))
-                            processed_count += 1
-                            if processed_count >= cluster_size:
-                                break
+                if is_near_water:
+                    row.append(None)
+                elif random.random() < 0.6:
+                    row.append(self._weighted_random_ore(ore_pool))
+                else:
+                    row.append(None)
 
-        # 5. เจาะทางเดินเพื่อให้ทั่วถึง (Broad Pathways)
-        # เจาะแนวตั้งประมาณ 2 เส้น และแนวนอนประมาณ 2 เส้น ให้มีความกว้าง 2 บล็อก
-        for _ in range(2):
-            path_x = random.randint(2, self.grid_width - 3)
-            for ry in range(self.grid_height):
-                self.underground_map[ry][path_x] = None
-                self.underground_map[ry][path_x+1] = None
-                
-        for _ in range(2):
-            path_y = random.randint(2, self.grid_height - 3)
-            for rx in range(self.grid_width):
-                self.underground_map[path_y][rx] = None
-                self.underground_map[path_y+1][rx] = None
-
-        # 6. วางทางเข้าเหมืองบนแผนที่บนดิน (Surface Map)
-        # ให้ไว้ใกล้ๆ จุดเกิด สมมติว่าเป็นพิกัด (10, 8)
-        self.surface_map[8][10] = "entrance"
+            self.grid_map.append(row)
 
     def _weighted_random_ore(self, ore_pool):
-        """สุ่มเลือกแร่ตาม weight (weight สูง = ได้บ่อย)"""
-        total_weight = sum(w for _, w in ore_pool)
-        r = random.uniform(0, total_weight)
-        current = 0
+        total_weight = sum(weight for _, weight in ore_pool)
+        random_weight = random.uniform(0, total_weight)
+        current_weight = 0
+
         for ore_key, weight in ore_pool:
-            current += weight
-            if r <= current:
+            current_weight += weight
+            if random_weight <= current_weight:
                 return ore_key
-        return ore_pool[0][0]  # fallback
+
+        return ore_pool[0][0]
 
     def get_tile(self, x, y):
-        """ดูว่า tile (x, y) เป็นอะไร (None = ว่าง, str = ชื่อแร่)"""
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
             return self.grid_map[y][x]
         return None
 
     def is_water_tile(self, px, py):
-        """เช็คว่าพิกัด pixel (px, py) อยู่บน water tile หรือไม่"""
         col = int(px / COLLISION_TILE_SIZE)
         row = int(py / COLLISION_TILE_SIZE)
         if 0 <= col < COLLISION_GRID_SIZE and 0 <= row < COLLISION_GRID_SIZE:
             return WATER_MAP[row][col] == 1
-        return True  # นอกแผนที่ = blocked
+        return True
 
     def add_exp(self, amount):
-        """เพิ่ม EXP และเช็กการอัปเลเวล คืนค่า True ถ้ามีการอัปเลเวล"""
         self.current_exp += amount
         leveled_up = False
-        
-        # เช็กว่า EXP ทะลุหลอดไหม (ใช้ while เผื่อได้ EXP ทีเดียวเยอะๆ แล้วเลเวลอัป 2 ขั้น)
+
         while self.current_exp >= self.exp_to_next_level:
             self.current_exp -= self.exp_to_next_level
             self.level += 1
-            # คำนวณหลอด EXP ถัดไปให้ใช้เยอะขึ้น (เช่น เลเวล * 100)
             self.exp_to_next_level = self.level * 100
             leveled_up = True
-            
+
         return leveled_up
 
     def consume_stamina(self, amount):
         """ลดค่า Stamina ถ้ามีพอให้ลด คืนค่า True, ถ้าไม่พอ คืนค่า False"""
         if self.current_stamina >= amount:
             self.current_stamina -= amount
-            return True
-        return False
-    
-    def regenerate_stamina(self, amount):
-        """ฟื้นฟู Stamina คืนค่า True ถ้ามีการฟื้นฟู (ยังไม่เต็มหลอด)"""
-        if self.current_stamina < self.max_stamina:
-            self.current_stamina += amount
-            # ดักไว้ไม่ให้พลังงานล้นเกินหลอด (Max)
-            if self.current_stamina > self.max_stamina:
-                self.current_stamina = self.max_stamina
             return True
         return False
