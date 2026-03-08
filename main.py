@@ -412,6 +412,7 @@ class MapScreen(Screen):
         self.camera = CameraController(zoom=self.camera_zoom)
         self.minimap_renderer = MinimapRenderer()
         self.game_state = GameState()
+        self.surface_coords = (0, 0)
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
 
@@ -606,8 +607,16 @@ class MapScreen(Screen):
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
 
     def enter_mine(self):
-        # Placeholder for transitioning to underground
-        pass
+        player = self.ids.player_character
+        
+        # 1. Save surface coordinates
+        self.surface_coords = (player.x, player.y)
+        
+        # 2. Change depth and reload map
+        self.game_state.current_depth = 1
+        self.render_initial_map()
+        
+        print("Descended to the mine layer.")
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
