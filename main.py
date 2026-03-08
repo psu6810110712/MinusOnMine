@@ -414,6 +414,7 @@ class MapScreen(Screen):
         self.render_initial_map()
         self.auto_use_torch_if_needed()
         self.update_hud()
+        self.update_fog_overlay()
 
         Window.bind(on_key_down=self.on_keyboard_down)
         Window.bind(on_key_up=self.on_keyboard_up)
@@ -761,8 +762,60 @@ class MapScreen(Screen):
 
         self.update_hud()
 
+    def update_fog_overlay(self):
+        fog_overlay = self.ids.fog_overlay
+        player = self.ids.player_character
+        center_x, center_y = player.to_window(player.center_x, player.center_y)
+        outer_radius = self.game_state.get_vision_radius()
+        inner_radius = max(120, outer_radius * 0.55)
+
+        def draw_band(left, right, bottom, top, alpha):
+            clipped_left = max(fog_overlay.x, left)
+            clipped_right = min(fog_overlay.right, right)
+            clipped_bottom = max(fog_overlay.y, bottom)
+            clipped_top = min(fog_overlay.top, top)
+
+            if clipped_left >= clipped_right or clipped_bottom >= clipped_top:
+                return
+
+            Color(0, 0, 0, alpha)
+            Rectangle(
+                pos=(fog_overlay.x, fog_overlay.y),
+                size=(max(0, clipped_left - fog_overlay.x), fog_overlay.height),
+            )
+            Rectangle(
+                pos=(clipped_right, fog_overlay.y),
+                size=(max(0, fog_overlay.right - clipped_right), fog_overlay.height),
+            )
+            Rectangle(
+                pos=(clipped_left, fog_overlay.y),
+                size=(max(0, clipped_right - clipped_left), max(0, clipped_bottom - fog_overlay.y)),
+            )
+            Rectangle(
+                pos=(clipped_left, clipped_top),
+                size=(max(0, clipped_right - clipped_left), max(0, fog_overlay.top - clipped_top)),
+            )
+
+        fog_overlay.canvas.after.clear()
+        with fog_overlay.canvas.after:
+            draw_band(
+                center_x - outer_radius,
+                center_x + outer_radius,
+                center_y - outer_radius,
+                center_y + outer_radius,
+                0.78,
+            )
+            draw_band(
+                center_x - inner_radius,
+                center_x + inner_radius,
+                center_y - inner_radius,
+                center_y + inner_radius,
+                0.35,
+            )
+
     def update(self, dt):
         self.update_torch_state(dt)
+        self.update_fog_overlay()
 
         # Don't update player movement if inventory is open
         if not self.ids.inventory_overlay.disabled:
