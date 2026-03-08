@@ -290,12 +290,15 @@
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-            size: 200, 70
-            pos_hint: {'x': 0.01, 'top': 0.75} # วางมุมซ้ายบน
+            
+            # 1. ขยายความสูงกล่องตรงนี้ครับ (จาก 70 เป็น 110)
+            size: 240, 120
+            
+            pos_hint: {'x': 0.01, 'top': 0.75} 
             padding: 10
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7  # พื้นหลังสีดำโปร่งแสง
+                    rgba: 0.1, 0.1, 0.1, 0.7 
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
@@ -304,12 +307,12 @@
             Label:
                 id: level_label
                 text: 'Lv. 1'
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' # ใช้ฟอนต์คุณ (หรือลบบรรทัดนี้ถ้าไม่มี)
+                font_name: 'assets/fonts/PixelifySans-Bold.ttf' 
                 font_size: '24sp'
-                color: 1, 0.8, 0, 1  # สีทอง
+                color: 1, 0.8, 0, 1  
                 text_size: self.size
                 halign: 'left'
-                valign: 'bottom'
+                valign: 'middle'  # 2. แก้เป็น middle
 
             Label:
                 id: exp_label
@@ -319,17 +322,17 @@
                 color: 1, 1, 1, 1
                 text_size: self.size
                 halign: 'left'
-                valign: 'top'
+                valign: 'middle'  # 2. แก้เป็น middle
 
             Label:
                 id: stamina_label
                 text: 'Energy: 100 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '16sp'
-                color: 0.2, 0.8, 1, 1  # สีฟ้าคราม
+                color: 0.2, 0.8, 1, 1  
                 text_size: self.size
                 halign: 'left'
-                valign: 'top'
+                valign: 'middle'  # 2. แก้เป็น middle
 
 # =============================================
 # สร้างหน้าตาของตัวละคร (Player)
