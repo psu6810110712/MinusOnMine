@@ -132,10 +132,19 @@ class OreBlock(Widget):
             Color(*self.color)
             
             # --- กำหนดขนาดแร่ให้เล็กลง (เช่น 50x50) ---
-            visual_size = 40
+            visual_size = 80  # ขยายให้ใหญ่ขึ้นจาก 40 เป็น 80
             # คำนวณจุดกึ่งกลางของช่อง 120x120 (ให้อยู่ตรงกลางกริด)
             offset = (120 - visual_size) / 2  
             
+            # 1. วาดเงาดำๆ ใต้แร่เพื่อมิติ
+            Color(0, 0, 0, 0.3)
+            Ellipse(
+                pos=(self.pos[0] + offset + 5, self.pos[1] + offset - 10),
+                size=(visual_size - 10, visual_size * 0.4)
+            )
+            
+            # 2. วาดตัวภาพแร่
+            Color(*self.color)
             if self.image_source:
                 self.rect = Rectangle(
                     pos=(self.pos[0] + offset, self.pos[1] + offset), 
