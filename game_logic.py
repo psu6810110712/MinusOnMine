@@ -1,5 +1,4 @@
 ﻿import random
-
 from game_data import (
     COLLISION_GRID_SIZE,
     COLLISION_TILE_SIZE,
@@ -9,57 +8,58 @@ from game_data import (
     WATER_MAP,
 )
 
-
 class GameState:
     """Store the shared gameplay state."""
 
     def __init__(self):
+        # 1. ข้อมูลพื้นฐานแผนที่
         self.grid_width = MAP_WIDTH
         self.grid_height = MAP_HEIGHT
-        self.money = 0
-        self.inventory = {}
         self.forbidden_grids = [
             (11, 10), (13, 11), (11, 12), (13, 13),
             (13, 14), (14, 14), (15, 14), (15, 13),
             (9, 9), (9, 10), (10, 10), (9, 11), (10, 11),
             (13, 10), (13, 9), (15, 11), (16, 12), (10, 9),
             (10, 10), (10, 11) 
-            ]
+        ]
         
-        self.surface_map = []
-        self.underground_map = []
-        self.current_depth = 0  # 0 = Surface, 1 = Underground
-        self.generate_maps()
-        self.level = 1 # ระบบ level
-        self.current_exp = 0
-        self.exp_to_next_level = 100  # เริ่มต้นใช้ 100 EXP ในการขึ้นเลเวล 2
-        self.max_stamina = 100
-        self.current_stamina = 100
-
-    @property
-    def grid_map(self):
-        """คืนค่าแผนที่ อิงตามความลึก (0: บนดิน, 1: ใต้ดิน)"""
-        return self.surface_map if self.current_depth == 0 else self.underground_map
-
-        self.grid_map = []
-        self.generate_map()
-
+        # 2. สถานะทรัพยากร
+        self.money = 0
+        self.inventory = {}
+        self.current_capacity = 0
+        self.max_capacity = 20
+        
+        # 3. ระบบ Level & EXP
         self.level = 1
         self.current_exp = 0
         self.exp_to_next_level = 100
+        
+        # 4. ระบบ Stamina
         self.max_stamina = 100
         self.current_stamina = 100
-
-        self.current_capacity = 0
-        self.max_capacity = 20
-
+        
+        # 5. ระบบ Torch (ไฟฉาย)
         self.torch_count = 0
         self.torch_time_left = 0.0
         self.base_vision_radius = 210
         self.torch_vision_radius = 560
         self.torch_duration_seconds = 180
         self.torch_price = 75
+        
+        # 6. แผนที่และการสร้างโลก
+        self.surface_map = []
+        self.underground_map = []
+        self.current_depth = 0  # 0 = Surface, 1 = Underground
+        self.grid_map = []      # ตัวแปรหลักที่จะเก็บข้อมูลแร่
+        
+        self.generate_map()
 
+    def get_active_map_data(self):
+        """คืนค่าแผนที่ อิงตามความลึก (แก้ไขชื่อเพื่อไม่ให้ซ้ำกับตัวแปร grid_map)"""
+        # ตอนนี้เราเน้นที่ surface_map เป็นหลักก่อน
+        return self.grid_map
+
+    # --- ระบบไอเทมและคบเพลิง ---
     def add_to_inventory(self, ore_type):
         if self.current_capacity < self.max_capacity:
             self.inventory[ore_type] = self.inventory.get(ore_type, 0) + 1
@@ -76,8 +76,6 @@ class GameState:
     def use_torch(self):
         if not self.can_use_torch():
             return False
-
-        # หยิบคบเพลิงมาเริ่มใช้
         self.torch_count -= 1
         self.torch_time_left = float(self.torch_duration_seconds)
         return True
@@ -85,26 +83,22 @@ class GameState:
     def tick_torch(self, dt):
         if not self.has_active_torch():
             return False
-
-        # นับเวลาคบเพลิงที่เหลือ
         self.torch_time_left = max(0.0, self.torch_time_left - dt)
         return self.torch_time_left <= 0
 
     def get_vision_radius(self):
-        if self.has_active_torch():
-            return self.torch_vision_radius
-        # ไม่มีคบเพลิงก็ยังเห็นใกล้ ๆ
-        return self.base_vision_radius
+        return self.torch_vision_radius if self.has_active_torch() else self.base_vision_radius
 
     def buy_torch(self):
-        if self.money < self.torch_price:
-            return False
+        if self.money >= self.torch_price:
+            self.money -= self.torch_price
+            self.torch_count += 1
+            return True
+        return False
 
-        self.money -= self.torch_price
-        self.torch_count += 1
-        return True
-
+    # --- ระบบการสร้างแผนที่ ---
     def generate_map(self):
+        """สุ่มวางแร่ลงในตาราง โดยเช็กระยะห่างจากน้ำ"""
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
             ore_pool.append((ore_id, ore_obj.weight))
@@ -141,19 +135,16 @@ class GameState:
                     row.append(self._weighted_random_ore(ore_pool))
                 else:
                     row.append(None)
-
             self.grid_map.append(row)
 
     def _weighted_random_ore(self, ore_pool):
         total_weight = sum(weight for _, weight in ore_pool)
         random_weight = random.uniform(0, total_weight)
         current_weight = 0
-
         for ore_key, weight in ore_pool:
             current_weight += weight
             if random_weight <= current_weight:
                 return ore_key
-
         return ore_pool[0][0]
 
     def get_tile(self, x, y):
@@ -168,21 +159,25 @@ class GameState:
             return WATER_MAP[row][col] == 1
         return True
 
+    # --- ระบบ Level & Stamina ---
     def add_exp(self, amount):
         self.current_exp += amount
         leveled_up = False
-
         while self.current_exp >= self.exp_to_next_level:
             self.current_exp -= self.exp_to_next_level
             self.level += 1
             self.exp_to_next_level = self.level * 100
             leveled_up = True
-
         return leveled_up
 
     def consume_stamina(self, amount):
-        """ลดค่า Stamina ถ้ามีพอให้ลด คืนค่า True, ถ้าไม่พอ คืนค่า False"""
         if self.current_stamina >= amount:
             self.current_stamina -= amount
+            return True
+        return False
+    
+    def regenerate_stamina(self, amount):
+        if self.current_stamina < self.max_stamina:
+            self.current_stamina = min(self.max_stamina, self.current_stamina + amount)
             return True
         return False
