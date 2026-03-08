@@ -1092,6 +1092,17 @@ class MapScreen(Screen):
             # Show a simple warning when ores are not enough.
             self.ids.btn_buy_upgrade.text = "NOT ENOUGH ORES!"
 
+    def shake_screen(self, intensity=5):
+        """สร้างแอนิเมชันสั่นหน้าจอแบบสุ่มสั้นๆ"""
+        world = self.ids.world_layer
+        orig_pos = (world.x, world.y)
+        
+        # สั่นไป-กลับ 3 จังหวะอย่างรวดเร็ว
+        anim = Animation(x=world.x + intensity, y=world.y + intensity, duration=0.04) + \
+               Animation(x=world.x - intensity, y=world.y - intensity, duration=0.04) + \
+               Animation(x=world.x, y=world.y, duration=0.04)
+        anim.start(world)
+
 
 class MinusOnMineApp(App):
     def build(self):
