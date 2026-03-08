@@ -1,4 +1,4 @@
-from kivy.app import App
+﻿from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Ellipse, Line, Rectangle
@@ -137,15 +137,15 @@ class OreBlock(Widget):
         self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
         self.size_hint = (None, None)
-        self.size = (120, 120)  # ขนาดยังคงเป็น 120x120 เพื่อให้ระยะการขุดและชนยังเท่าเดิม
+        self.size = (120, 120)  # à¸‚à¸™à¸²à¸”à¸¢à¸±à¸‡à¸„à¸‡à¹€à¸›à¹‡à¸™ 120x120 à¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¸£à¸°à¸¢à¸°à¸à¸²à¸£à¸‚à¸¸à¸”à¹à¸¥à¸°à¸Šà¸™à¸¢à¸±à¸‡à¹€à¸—à¹ˆà¸²à¹€à¸”à¸´à¸¡
         self.pos = (self.grid_x * 120, self.grid_y * 120)
 
         with self.canvas:
             Color(*self.color)
             
-            # --- กำหนดขนาดแร่ให้เล็กลง (เช่น 50x50) ---
+            # --- à¸à¸³à¸«à¸™à¸”à¸‚à¸™à¸²à¸”à¹à¸£à¹ˆà¹ƒà¸«à¹‰à¹€à¸¥à¹‡à¸à¸¥à¸‡ (à¹€à¸Šà¹ˆà¸™ 50x50) ---
             visual_size = 40
-            # คำนวณจุดกึ่งกลางของช่อง 120x120 (ให้อยู่ตรงกลางกริด)
+            # à¸„à¸³à¸™à¸§à¸“à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸Šà¹ˆà¸­à¸‡ 120x120 (à¹ƒà¸«à¹‰à¸­à¸¢à¸¹à¹ˆà¸•à¸£à¸‡à¸à¸¥à¸²à¸‡à¸à¸£à¸´à¸”)
             offset = (120 - visual_size) / 2  
             
             if self.image_source:
@@ -214,7 +214,7 @@ class ItemDrop(Widget):
         else:
             print(f"Inventory full! Cannot collect {self.ore_type}")
         
-        # 2. แจก EXP ตามชนิดแร่
+        # 2. à¹à¸ˆà¸ EXP à¸•à¸²à¸¡à¸Šà¸™à¸´à¸”à¹à¸£à¹ˆ
         exp_rewards = {
             'stone': 10,
             'coal': 15,
@@ -222,19 +222,19 @@ class ItemDrop(Widget):
             'iron': 35,
             'gold': 50
         }
-        # ดึงค่า EXP ถ้าไม่มีแร่นี้ในดิกชันนารีให้ 10 EXP เป็นค่าเริ่มต้น
+        # à¸”à¸¶à¸‡à¸„à¹ˆà¸² EXP à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¸¡à¸µà¹à¸£à¹ˆà¸™à¸µà¹‰à¹ƒà¸™à¸”à¸´à¸à¸Šà¸±à¸™à¸™à¸²à¸£à¸µà¹ƒà¸«à¹‰ 10 EXP à¹€à¸›à¹‡à¸™à¸„à¹ˆà¸²à¹€à¸£à¸´à¹ˆà¸¡à¸•à¹‰à¸™
         exp_gained = exp_rewards.get(self.ore_type, 10) 
         
-        # สั่งบวก EXP เข้า GameState
+        # à¸ªà¸±à¹ˆà¸‡à¸šà¸§à¸ EXP à¹€à¸‚à¹‰à¸² GameState
         is_level_up = self.game_state.add_exp(exp_gained)
         
         if is_level_up:
-            print(f"🎉 LEVEL UP! ตอนนี้เลเวล {self.game_state.level} แล้ว! 🎉")
+            print(f"ðŸŽ‰ LEVEL UP! à¸•à¸­à¸™à¸™à¸µà¹‰à¹€à¸¥à¹€à¸§à¸¥ {self.game_state.level} à¹à¸¥à¹‰à¸§! ðŸŽ‰")
             
-        # สั่งอัปเดตหน้าจอ UI
+        # à¸ªà¸±à¹ˆà¸‡à¸­à¸±à¸›à¹€à¸”à¸•à¸«à¸™à¹‰à¸²à¸ˆà¸­ UI
         self.map_screen.update_hud()
         
-        # Delete itself (โค้ดลบรูปแร่ทิ้งเหมือนเดิม)
+        # Delete itself (à¹‚à¸„à¹‰à¸”à¸¥à¸šà¸£à¸¹à¸›à¹à¸£à¹ˆà¸—à¸´à¹‰à¸‡à¹€à¸«à¸¡à¸·à¸­à¸™à¹€à¸”à¸´à¸¡)
         if self.parent:
             self.parent.remove_widget(self)
         # Delete itself
@@ -391,7 +391,7 @@ class MapScreen(Screen):
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
         
-        # --- ระบบอัปเกรด (ย้ายมาไว้ที่นี่เพื่อให้ค่าไม่หาย) ---
+        # --- à¸£à¸°à¸šà¸šà¸­à¸±à¸›à¹€à¸à¸£à¸” (à¸¢à¹‰à¸²à¸¢à¸¡à¸²à¹„à¸§à¹‰à¸—à¸µà¹ˆà¸™à¸µà¹ˆà¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¸„à¹ˆà¸²à¹„à¸¡à¹ˆà¸«à¸²à¸¢) ---
         self.pickaxe_level = 1
         self.upgrade_costs = {
             2: {"stone": 10},
@@ -450,11 +450,17 @@ class MapScreen(Screen):
              overlay.opacity = 0
              overlay.disabled = True
 
+    def format_torch_time(self):
+        total_seconds = max(0, int(self.game_state.torch_time_left))
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        return f"{minutes:02d}:{seconds:02d}"
+
     def update_hud(self):
-        """อัปเดตข้อความ Level, EXP และ Money บนหน้าจอ"""
         self.ids.level_label.text = f"Lv. {self.game_state.level}"
         self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
         self.ids.hud_money_label.text = f"Money: ${int(self.game_state.money)}"
+        self.ids.hud_torch_label.text = f"Torch: {self.game_state.torch_count} | {self.format_torch_time()}"
 
     def update_inventory_ui(self):
         # Update Header Labels
@@ -532,17 +538,17 @@ class MapScreen(Screen):
             self.interact_action()
             return
 
-        # Dev Tool: กดปุ่ม 'P' เพื่อดูพิกัดที่ตัวละครยืนอยู่
+        # Dev Tool: à¸à¸”à¸›à¸¸à¹ˆà¸¡ 'P' à¹€à¸žà¸·à¹ˆà¸­à¸”à¸¹à¸žà¸´à¸à¸±à¸”à¸—à¸µà¹ˆà¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆ
         #if _codepoint == 'p' or key == 112:
         #    player = self.ids.player_character
-           # หาจุดกึ่งกลางของตัวละคร
+           # à¸«à¸²à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£
         #    player_cx = player.x + (player.width / 2.0)
         #    player_cy = player.y + (player.height / 2.0)
             
-            # แปลงเป็นพิกัด Grid
+            # à¹à¸›à¸¥à¸‡à¹€à¸›à¹‡à¸™à¸žà¸´à¸à¸±à¸” Grid
         #    grid_x = int(player_cx / 120)
         #    grid_y = int(player_cy / 120)
-        #    print(f"📍 ตัวละครยืนอยู่ที่พิกัด: ({grid_x}, {grid_y})")
+        #    print(f"ðŸ“ à¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆà¸—à¸µà¹ˆà¸žà¸´à¸à¸±à¸”: ({grid_x}, {grid_y})")
 
     def interact_action(self):
         """Check distance to NPC and open Sell UI if close enough"""
@@ -567,7 +573,7 @@ class MapScreen(Screen):
             print("NPC is too far away.")
 
     def toggle_sell_menu(self):
-        """เปิด/ปิด หน้าต่างขายของ"""
+        """à¹€à¸›à¸´à¸”/à¸›à¸´à¸” à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸‚à¸²à¸¢à¸‚à¸­à¸‡"""
         overlay = self.ids.sell_overlay
         if overlay.disabled:
              overlay.opacity = 1
@@ -788,71 +794,71 @@ class MapScreen(Screen):
         elif new_y > world.height - player.height:
             new_y = world.height - player.height
 
-        # --- ระบบตรวจสอบการชน (หิน/แร่/สิ่งกีดขวาง) ---
+        # --- à¸£à¸°à¸šà¸šà¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸à¸²à¸£à¸Šà¸™ (à¸«à¸´à¸™/à¹à¸£à¹ˆ/à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡) ---
         inset_x = 25  
         inset_y = 20  
         pw = player.width - inset_x * 2
         ph = player.height - inset_y * 2
 
         def hits_solid(px, py):
-            """ตรวจสอบว่ากรอบของตัวละครทับซ้อนกับสิ่งกีดขวางหรือไม่"""
+            """à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸²à¸à¸£à¸­à¸šà¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸—à¸±à¸šà¸‹à¹‰à¸­à¸™à¸à¸±à¸šà¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ"""
             gs = self.game_state
             left = px + inset_x
             right = px + inset_x + pw
             bottom = py + inset_y
             top = py + inset_y + ph
             
-            # เช็กจุดทั้ง 4 มุม และจุดกึ่งกลางของกรอบตัวละคร
+            # à¹€à¸Šà¹‡à¸à¸ˆà¸¸à¸”à¸—à¸±à¹‰à¸‡ 4 à¸¡à¸¸à¸¡ à¹à¸¥à¸°à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸à¸£à¸­à¸šà¸•à¸±à¸§à¸¥à¸°à¸„à¸£
             for cx in [left, (left + right) / 2, right]:
                 for cy in [bottom, (bottom + top) / 2, top]:
                     
-                    # 1. เช็กการชนกับน้ำ 
+                    # 1. à¹€à¸Šà¹‡à¸à¸à¸²à¸£à¸Šà¸™à¸à¸±à¸šà¸™à¹‰à¸³ 
                     if hasattr(gs, 'is_water_tile') and gs.is_water_tile(cx, cy):
                         return True
                         
-                    # 2. เช็กการชนกับหินหรือแร่ (ดึงข้อมูลจาก Grid)
-                    # แปลงพิกัด Pixel ให้เป็นพิกัด Grid (หารด้วยขนาดบล็อก 120)
+                    # 2. à¹€à¸Šà¹‡à¸à¸à¸²à¸£à¸Šà¸™à¸à¸±à¸šà¸«à¸´à¸™à¸«à¸£à¸·à¸­à¹à¸£à¹ˆ (à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ˆà¸²à¸ Grid)
+                    # à¹à¸›à¸¥à¸‡à¸žà¸´à¸à¸±à¸” Pixel à¹ƒà¸«à¹‰à¹€à¸›à¹‡à¸™à¸žà¸´à¸à¸±à¸” Grid (à¸«à¸²à¸£à¸”à¹‰à¸§à¸¢à¸‚à¸™à¸²à¸”à¸šà¸¥à¹‡à¸­à¸ 120)
                     grid_x = int(cx / 120)
                     grid_y = int(cy / 120)
                     
-                    # ตรวจสอบว่าพิกัดยังอยู่ในขอบเขตแผนที่
+                    # à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸²à¸žà¸´à¸à¸±à¸”à¸¢à¸±à¸‡à¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸‚à¸­à¸šà¹€à¸‚à¸•à¹à¸œà¸™à¸—à¸µà¹ˆ
                     if gs.grid_map[grid_y][grid_x] is not None:
                                 # ==========================================
-                                # อัปเดตใหม่: บีบกรอบการชน (Hitbox) ให้เล็กกว่ารูปภาพจริง
+                                # à¸­à¸±à¸›à¹€à¸”à¸•à¹ƒà¸«à¸¡à¹ˆ: à¸šà¸µà¸šà¸à¸£à¸­à¸šà¸à¸²à¸£à¸Šà¸™ (Hitbox) à¹ƒà¸«à¹‰à¹€à¸¥à¹‡à¸à¸à¸§à¹ˆà¸²à¸£à¸¹à¸›à¸ à¸²à¸žà¸ˆà¸£à¸´à¸‡
                                 # ==========================================
                                 visual_size = 45 
                                 offset = (120 - visual_size) / 2
                                 
-                                # --- ปรับระยะความชิดตรงนี้ครับ ---
-                                # ยิ่งใส่เลขเยอะ ยิ่งเดินทะลุเข้าไปใกล้แร่ได้มากขึ้น
-                                ore_inset_x = 10  # ยอมให้เดินซ้อนทับด้านซ้าย/ขวา ได้ 10 พิกเซล
-                                ore_inset_y = 15  # ยอมให้เดินซ้อนทับด้านบน/ล่าง ได้ 15 พิกเซล
+                                # --- à¸›à¸£à¸±à¸šà¸£à¸°à¸¢à¸°à¸„à¸§à¸²à¸¡à¸Šà¸´à¸”à¸•à¸£à¸‡à¸™à¸µà¹‰à¸„à¸£à¸±à¸š ---
+                                # à¸¢à¸´à¹ˆà¸‡à¹ƒà¸ªà¹ˆà¹€à¸¥à¸‚à¹€à¸¢à¸­à¸° à¸¢à¸´à¹ˆà¸‡à¹€à¸”à¸´à¸™à¸—à¸°à¸¥à¸¸à¹€à¸‚à¹‰à¸²à¹„à¸›à¹ƒà¸à¸¥à¹‰à¹à¸£à¹ˆà¹„à¸”à¹‰à¸¡à¸²à¸à¸‚à¸¶à¹‰à¸™
+                                ore_inset_x = 10  # à¸¢à¸­à¸¡à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¸‹à¹‰à¸­à¸™à¸—à¸±à¸šà¸”à¹‰à¸²à¸™à¸‹à¹‰à¸²à¸¢/à¸‚à¸§à¸² à¹„à¸”à¹‰ 10 à¸žà¸´à¸à¹€à¸‹à¸¥
+                                ore_inset_y = 15  # à¸¢à¸­à¸¡à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¸‹à¹‰à¸­à¸™à¸—à¸±à¸šà¸”à¹‰à¸²à¸™à¸šà¸™/à¸¥à¹ˆà¸²à¸‡ à¹„à¸”à¹‰ 15 à¸žà¸´à¸à¹€à¸‹à¸¥
                                 
                                 ore_left = (grid_x * 120) + offset + ore_inset_x
                                 ore_right = (grid_x * 120) + offset + visual_size - ore_inset_x
                                 ore_bottom = (grid_y * 120) + offset + ore_inset_y
                                 ore_top = (grid_y * 120) + offset + visual_size - ore_inset_y
                                 
-                                # เช็กว่าจุดพิกัด เหยียบโดน Hitbox ที่ถูกบีบแล้วหรือไม่
+                                # à¹€à¸Šà¹‡à¸à¸§à¹ˆà¸²à¸ˆà¸¸à¸”à¸žà¸´à¸à¸±à¸” à¹€à¸«à¸¢à¸µà¸¢à¸šà¹‚à¸”à¸™ Hitbox à¸—à¸µà¹ˆà¸–à¸¹à¸à¸šà¸µà¸šà¹à¸¥à¹‰à¸§à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ
                                 if ore_left <= cx <= ore_right and ore_bottom <= cy <= ore_top:
                                     return True
                                 
             return False
 
-        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้) ---
-        # ทดสอบการขยับแกน X ก่อน
+        # --- à¹ƒà¸Šà¹‰à¹€à¸—à¸„à¸™à¸´à¸„ Wall Sliding (à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¹„à¸–à¸à¸³à¹à¸žà¸‡à¹„à¸”à¹‰) ---
+        # à¸—à¸”à¸ªà¸­à¸šà¸à¸²à¸£à¸‚à¸¢à¸±à¸šà¹à¸à¸™ X à¸à¹ˆà¸­à¸™
         if hits_solid(new_x, player.y):
-            new_x = player.x  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง X กลับมาที่เดิม
+            new_x = player.x  # à¸–à¹‰à¸²à¸Šà¸™à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡ à¹ƒà¸«à¹‰à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡ X à¸à¸¥à¸±à¸šà¸¡à¸²à¸—à¸µà¹ˆà¹€à¸”à¸´à¸¡
 
-        # ทดสอบการขยับแกน Y
+        # à¸—à¸”à¸ªà¸­à¸šà¸à¸²à¸£à¸‚à¸¢à¸±à¸šà¹à¸à¸™ Y
         if hits_solid(new_x, new_y):
-            new_y = player.y  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง Y กลับมาที่เดิม
+            new_y = player.y  # à¸–à¹‰à¸²à¸Šà¸™à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡ à¹ƒà¸«à¹‰à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡ Y à¸à¸¥à¸±à¸šà¸¡à¸²à¸—à¸µà¹ˆà¹€à¸”à¸´à¸¡
 
-        # อัปเดตตำแหน่งจริงของตัวละคร
+        # à¸­à¸±à¸›à¹€à¸”à¸•à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¸ˆà¸£à¸´à¸‡à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£
         player.x = new_x
         player.y = new_y
 
-        # --- อัปเดตกล้องและ Minimap (ระบบเดิมของคุณ) ---
+        # --- à¸­à¸±à¸›à¹€à¸”à¸•à¸à¸¥à¹‰à¸­à¸‡à¹à¸¥à¸° Minimap (à¸£à¸°à¸šà¸šà¹€à¸”à¸´à¸¡à¸‚à¸­à¸‡à¸„à¸¸à¸“) ---
         world.x, world.y = self.camera.update(
             player_pos=(player.x, player.y),
             player_size=(player.width, player.height),
@@ -872,7 +878,7 @@ class MapScreen(Screen):
             background_source="ground.png",
         )
     def toggle_upgrade_menu(self):
-        """เปิด/ปิด หน้าต่างอัปเกรด"""
+        """à¹€à¸›à¸´à¸”/à¸›à¸´à¸” à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸­à¸±à¸›à¹€à¸à¸£à¸”"""
         overlay = self.ids.upgrade_overlay
         if overlay.disabled:
             overlay.opacity = 1
@@ -883,7 +889,7 @@ class MapScreen(Screen):
             overlay.disabled = True
 
     def update_upgrade_ui(self):
-        """อัปเดตข้อความราคาในหน้าจอ"""
+        """à¸­à¸±à¸›à¹€à¸”à¸•à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡à¸£à¸²à¸„à¸²à¹ƒà¸™à¸«à¸™à¹‰à¸²à¸ˆà¸­"""
         next_level = self.pickaxe_level + 1
         
         if next_level in self.upgrade_costs:
@@ -900,21 +906,21 @@ class MapScreen(Screen):
             self.ids.btn_buy_upgrade.text = "MAXED OUT"
 
     def buy_upgrade(self):
-        """เมื่อกดปุ่มซื้ออัปเกรด"""
+        """à¹€à¸¡à¸·à¹ˆà¸­à¸à¸”à¸›à¸¸à¹ˆà¸¡à¸‹à¸·à¹‰à¸­à¸­à¸±à¸›à¹€à¸à¸£à¸”"""
         next_level = self.pickaxe_level + 1
         if next_level not in self.upgrade_costs:
-            return # เลเวลตันแล้ว
+            return # à¹€à¸¥à¹€à¸§à¸¥à¸•à¸±à¸™à¹à¸¥à¹‰à¸§
 
         costs = self.upgrade_costs[next_level]
         
-        # 1. เช็กว่าแร่ในกระเป๋ามีพอจ่ายไหม?
+        # 1. à¹€à¸Šà¹‡à¸à¸§à¹ˆà¸²à¹à¸£à¹ˆà¹ƒà¸™à¸à¸£à¸°à¹€à¸›à¹‹à¸²à¸¡à¸µà¸žà¸­à¸ˆà¹ˆà¸²à¸¢à¹„à¸«à¸¡?
         can_afford = True
         for ore, req_amount in costs.items():
             if self.game_state.inventory.get(ore, 0) < req_amount:
                 can_afford = False
                 break
                 
-        # 2. ถ้ามีแร่พอ ให้หักแร่และอัปเกรด
+        # 2. à¸–à¹‰à¸²à¸¡à¸µà¹à¸£à¹ˆà¸žà¸­ à¹ƒà¸«à¹‰à¸«à¸±à¸à¹à¸£à¹ˆà¹à¸¥à¸°à¸­à¸±à¸›à¹€à¸à¸£à¸”
         if can_afford:
             for ore, req_amount in costs.items():
                 self.game_state.inventory[ore] -= req_amount
@@ -922,15 +928,15 @@ class MapScreen(Screen):
                 
             self.pickaxe_level += 1
             
-            # --- หัวใจสำคัญ: ทำให้ขุดเร็วขึ้น! ---
+            # --- à¸«à¸±à¸§à¹ƒà¸ˆà¸ªà¸³à¸„à¸±à¸: à¸—à¸³à¹ƒà¸«à¹‰à¸‚à¸¸à¸”à¹€à¸£à¹‡à¸§à¸‚à¸¶à¹‰à¸™! ---
             player = self.ids.player_character
-            # ลดเวลาอนิเมชันตอนขุดลง (ยิ่งค่าน้อย ยิ่งสับจอบไว)
+            # à¸¥à¸”à¹€à¸§à¸¥à¸²à¸­à¸™à¸´à¹€à¸¡à¸Šà¸±à¸™à¸•à¸­à¸™à¸‚à¸¸à¸”à¸¥à¸‡ (à¸¢à¸´à¹ˆà¸‡à¸„à¹ˆà¸²à¸™à¹‰à¸­à¸¢ à¸¢à¸´à¹ˆà¸‡à¸ªà¸±à¸šà¸ˆà¸­à¸šà¹„à¸§)
             player.mine_speed = max(0.01, player.mine_speed - 0.01) 
             
             print(f"Upgraded to Level {self.pickaxe_level}! New Speed: {player.mine_speed}")
-            self.update_upgrade_ui() # รีเฟรชหน้าจอ
+            self.update_upgrade_ui() # à¸£à¸µà¹€à¸Ÿà¸£à¸Šà¸«à¸™à¹‰à¸²à¸ˆà¸­
         else:
-            # ถ้าแร่ไม่พอ ให้ปุ่มบอกใบ้
+            # à¸–à¹‰à¸²à¹à¸£à¹ˆà¹„à¸¡à¹ˆà¸žà¸­ à¹ƒà¸«à¹‰à¸›à¸¸à¹ˆà¸¡à¸šà¸­à¸à¹ƒà¸šà¹‰
             self.ids.btn_buy_upgrade.text = "NOT ENOUGH ORES!"
 
 
