@@ -149,6 +149,19 @@
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
 
+        # ปุ่มออกจากเหมือง (ซ่อนไว้จนกว่าจะกดลงเหมือง)
+        Button:
+            id: btn_exit_mine
+            text: 'Exit Mine'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.88}
+            background_color: 0.2, 0.2, 0.8, 1
+            opacity: 0
+            disabled: True
+            on_press: root.exit_mine()
+
         # ===== 3. Minimap (ซ้ายบน) =====
         Widget:
             id: minimap_widget
@@ -214,6 +227,19 @@
             pos_hint: {'right': 0.98, 'top': 0.98}
             background_color: 0.8, 0.2, 0.2, 1
             on_press: root.manager.current = 'menu'
+
+        # ปุ่มออกจากเหมือง (ซ่อนไว้จนกว่าจะกดลงเหมือง)
+        Button:
+            id: btn_exit_mine
+            text: 'Exit Mine'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.88}
+            background_color: 0.2, 0.2, 0.8, 1
+            opacity: 0
+            disabled: True
+            on_press: root.exit_mine()
 
         # ===== 3. Minimap (ซ้ายบน) =====
         Widget:
