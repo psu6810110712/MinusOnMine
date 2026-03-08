@@ -459,6 +459,7 @@ class MapScreen(Screen):
              overlay.disabled = True
 
     def format_torch_time(self):
+        # แปลงเวลาให้อ่านง่ายบน HUD
         total_seconds = max(0, int(self.game_state.torch_time_left))
         minutes = total_seconds // 60
         seconds = total_seconds % 60
@@ -770,6 +771,7 @@ class MapScreen(Screen):
     def update_torch_state(self, dt):
         torch_expired = self.game_state.tick_torch(dt)
         if torch_expired:
+            # ถ้าไฟหมด ให้ใช้คบเพลิงอันถัดไป
             self.auto_use_torch_if_needed()
 
         self.update_hud()
@@ -808,6 +810,7 @@ class MapScreen(Screen):
                 size=(max(0, clipped_right - clipped_left), max(0, fog_overlay.top - clipped_top)),
             )
 
+        # วาดหมอกรอบจุดที่ผู้เล่นมองเห็น
         fog_overlay.canvas.after.clear()
         with fog_overlay.canvas.after:
             draw_band(

@@ -1,4 +1,4 @@
-import random
+﻿import random
 
 from game_data import (
     COLLISION_GRID_SIZE,
@@ -60,6 +60,7 @@ class GameState:
         if not self.can_use_torch():
             return False
 
+        # หยิบคบเพลิงมาเริ่มใช้
         self.torch_count -= 1
         self.torch_time_left = float(self.torch_duration_seconds)
         return True
@@ -68,12 +69,14 @@ class GameState:
         if not self.has_active_torch():
             return False
 
+        # นับเวลาคบเพลิงที่เหลือ
         self.torch_time_left = max(0.0, self.torch_time_left - dt)
         return self.torch_time_left <= 0
 
     def get_vision_radius(self):
         if self.has_active_torch():
             return self.torch_vision_radius
+        # ไม่มีคบเพลิงก็ยังเห็นใกล้ ๆ
         return self.base_vision_radius
 
     def buy_torch(self):
