@@ -621,7 +621,16 @@ class MapScreen(Screen):
         player.x = (world.width - player.width) / 2.0
         player.y = (world.height - player.height) / 2.0
         
+        # 4. Show the "Exit Mine" button
+        btn = self.ids.btn_exit_mine
+        btn.opacity = 1
+        btn.disabled = False
+        
         print("Descended to the mine layer.")
+
+    def exit_mine(self):
+        # Placeholder
+        pass
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
