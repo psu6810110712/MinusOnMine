@@ -572,6 +572,12 @@ class MapScreen(Screen):
             # 3. Check if there is a block there
             if (grid_x, grid_y) in self.ore_blocks_dict:
                 block = self.ore_blocks_dict[(grid_x, grid_y)]
+                
+                if isinstance(block, MineEntrance):
+                    print("Found Mine Entrance! Descending to Underground...")
+                    self.enter_mine()
+                    return
+                
                 ore_type = block.ore_type
                 
                 # Update visual
@@ -598,6 +604,10 @@ class MapScreen(Screen):
                 drop.animate_to_player()
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
+
+    def enter_mine(self):
+        # Placeholder for transitioning to underground
+        pass
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
