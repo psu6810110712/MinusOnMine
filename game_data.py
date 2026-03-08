@@ -2,18 +2,18 @@ from dataclasses import dataclass
 from typing import Dict
 
 # =============================================
-# ระบบ Design (UI Theme)
+# UI theme values
 # =============================================
 @dataclass
 class UITheme:
-    """เก็บสี, ขนาดฟอนต์, และค่า UI ทั่วแอป"""
-    # ขนาดฟอนต์
+    """Store shared UI colors and text sizes."""
+    # Font sizes
     TITLE_SIZE: int = 32
     HEADING_SIZE: int = 24
     BODY_SIZE: int = 18
     SMALL_SIZE: int = 14
     
-    # สี layout
+    # Layout colors
     BACKGROUND_DARK: tuple = (0.12, 0.12, 0.18, 1)
     BACKGROUND_LIGHT: tuple = (0.25, 0.20, 0.15, 1)
     TEXT_PRIMARY: tuple = (1, 1, 1, 1)
@@ -21,42 +21,42 @@ class UITheme:
     GROUND_COLOR: tuple = (0.25, 0.20, 0.15, 1)
 
 # =============================================
-# คลาสแร่ (Ore Class)
+# Ore data model
 # =============================================
 @dataclass
 class Ore:
-    """เก็บข้อมูลแร่: ชื่อ, ค่าขาย, ความหนาแน่น, สี, รูปภาพ"""
-    ore_id: str         # ชื่อระบุตัวตน เช่น "stone", "gold"
-    name: str           # ชื่อแสดง เช่น "Stone", "Gold"
-    value: int          # มูลค่าเมื่อขายแร่นี้
-    weight: float       # ความหนาแน่น (weight สูง = ได้บ่อย)
-    color: tuple        # สี RGBA สำหรับแบ็คอัพถ้าไม่มีรูป
-    image_path: str = "" # Path ไปยังรูปภาพแร่
+    """Describe one ore type used by the game."""
+    ore_id: str  # Internal id such as "stone" or "gold".
+    name: str  # Display name shown to the player.
+    value: int  # Sell value for this ore.
+    weight: float  # Spawn weight used during map generation.
+    color: tuple  # Fallback color when no sprite is available.
+    image_path: str = ""  # Optional sprite path for the ore.
 
 # =============================================
-# คลาสอัปเกรด (Upgrade Class)
+# Upgrade data model
 # =============================================
 @dataclass
 class Upgrade:
-    """เก็บข้อมูลอัปเกรด: ชื่อ, ราคา, คุณสมบัติพิเศษ"""
-    upgrade_id: str     # ชื่อระบุตัวตน เช่น "pickaxe_tier_1"
-    name: str           # ชื่อแสดง เช่น "Iron Pickaxe"
-    cost: int           # ราคาการอัปเกรด
-    attributes: Dict    # คุณสมบัติพิเศษ เช่น {"multiplier": 2}
+    """Describe one upgrade and its effects."""
+    upgrade_id: str  # Internal id such as "pickaxe_tier_1".
+    name: str  # Display name shown in the UI.
+    cost: int  # Purchase cost for this upgrade.
+    attributes: Dict  # Extra stats applied by the upgrade.
 
 # =============================================
-# คลาสเซตติ้งเกม (GameConfig Class)
+# Base game configuration
 # =============================================
 @dataclass
 class GameConfig:
-    """เก็บค่าคงที่ของเกม"""
-    STARTING_MONEY: int = 0     # เงินเริ่มต้น
-    MAX_LEVEL: int = 99         # ระดับสูงสุด
-    MAP_WIDTH: int = 20         # ความกว้างแผนที่
-    MAP_HEIGHT: int = 20        # ความสูงแผนที่
+    """Store fixed values shared across the game."""
+    STARTING_MONEY: int = 0  # Money at the start of a new game.
+    MAX_LEVEL: int = 99  # Highest supported player level.
+    MAP_WIDTH: int = 20  # Map width in grid cells.
+    MAP_HEIGHT: int = 20  # Map height in grid cells.
 
 # =============================================
-# ข้อมูลแร่ 12 ชนิด (เรียงตามความหายาก)
+# Ore definitions
 # =============================================
 ORES: Dict[str, Ore] = {
     "stone": Ore("stone", "Stone", 1, 100, (0.50, 0.50, 0.50, 1), "assets/sprites/ores/ore_0.png"),  
@@ -74,7 +74,7 @@ ORES: Dict[str, Ore] = {
 }
 
 # =============================================
-# ข้อมูลอัปเกรด 8 ชนิด
+# Upgrade definitions
 # =============================================
 UPGRADES: Dict[str, Upgrade] = {
     "pickaxe_tier_1": Upgrade("pickaxe_tier_1", "Iron Pickaxe", 100, {"multiplier": 2}),
@@ -88,14 +88,14 @@ UPGRADES: Dict[str, Upgrade] = {
 }
 
 # =============================================
-# ค่าคงที่เกม
+# Global game constants
 # =============================================
 STARTING_MONEY = 0
 MAX_LEVEL = 99
 MAP_WIDTH = 20
 MAP_HEIGHT = 20
 
-# สีพื้น (ทางเดิน) บน map - ใช้จาก UITheme
+# Ground color used by the map background
 GROUND_COLOR = UITheme().GROUND_COLOR
 
 # =============================================

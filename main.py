@@ -1,4 +1,4 @@
-﻿from kivy.app import App
+from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Ellipse, Line, Rectangle
@@ -137,15 +137,15 @@ class OreBlock(Widget):
         self.image_source = ore_data.image_path if ore_data and getattr(ore_data, 'image_path', "") else ""
 
         self.size_hint = (None, None)
-        self.size = (120, 120)  # à¸‚à¸™à¸²à¸”à¸¢à¸±à¸‡à¸„à¸‡à¹€à¸›à¹‡à¸™ 120x120 à¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¸£à¸°à¸¢à¸°à¸à¸²à¸£à¸‚à¸¸à¸”à¹à¸¥à¸°à¸Šà¸™à¸¢à¸±à¸‡à¹€à¸—à¹ˆà¸²à¹€à¸”à¸´à¸¡
+        self.size = (120, 120)  # Keep the block size consistent for gameplay.
         self.pos = (self.grid_x * 120, self.grid_y * 120)
 
         with self.canvas:
             Color(*self.color)
             
-            # --- à¸à¸³à¸«à¸™à¸”à¸‚à¸™à¸²à¸”à¹à¸£à¹ˆà¹ƒà¸«à¹‰à¹€à¸¥à¹‡à¸à¸¥à¸‡ (à¹€à¸Šà¹ˆà¸™ 50x50) ---
+            # Draw a smaller ore sprite inside the block.
             visual_size = 40
-            # à¸„à¸³à¸™à¸§à¸“à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸Šà¹ˆà¸­à¸‡ 120x120 (à¹ƒà¸«à¹‰à¸­à¸¢à¸¹à¹ˆà¸•à¸£à¸‡à¸à¸¥à¸²à¸‡à¸à¸£à¸´à¸”)
+            # Center the sprite inside the 120x120 tile.
             offset = (120 - visual_size) / 2  
             
             if self.image_source:
@@ -214,7 +214,7 @@ class ItemDrop(Widget):
         else:
             print(f"Inventory full! Cannot collect {self.ore_type}")
         
-        # 2. à¹à¸ˆà¸ EXP à¸•à¸²à¸¡à¸Šà¸™à¸´à¸”à¹à¸£à¹ˆ
+        # Award EXP based on the ore type.
         exp_rewards = {
             'stone': 10,
             'coal': 15,
@@ -222,19 +222,19 @@ class ItemDrop(Widget):
             'iron': 35,
             'gold': 50
         }
-        # à¸”à¸¶à¸‡à¸„à¹ˆà¸² EXP à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¸¡à¸µà¹à¸£à¹ˆà¸™à¸µà¹‰à¹ƒà¸™à¸”à¸´à¸à¸Šà¸±à¸™à¸™à¸²à¸£à¸µà¹ƒà¸«à¹‰ 10 EXP à¹€à¸›à¹‡à¸™à¸„à¹ˆà¸²à¹€à¸£à¸´à¹ˆà¸¡à¸•à¹‰à¸™
+        # Fall back to 10 EXP when the ore is not listed above.
         exp_gained = exp_rewards.get(self.ore_type, 10) 
         
-        # à¸ªà¸±à¹ˆà¸‡à¸šà¸§à¸ EXP à¹€à¸‚à¹‰à¸² GameState
+        # Apply the EXP reward to the shared game state.
         is_level_up = self.game_state.add_exp(exp_gained)
         
         if is_level_up:
-            print(f"ðŸŽ‰ LEVEL UP! à¸•à¸­à¸™à¸™à¸µà¹‰à¹€à¸¥à¹€à¸§à¸¥ {self.game_state.level} à¹à¸¥à¹‰à¸§! ðŸŽ‰")
+            print(f"ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â° LEVEL UP! ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã‚ÂµÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¹Ã¢â€šÂ¬ÃƒÂ Ã‚Â¸Ã‚Â¥ÃƒÂ Ã‚Â¹Ã¢â€šÂ¬ÃƒÂ Ã‚Â¸Ã‚Â§ÃƒÂ Ã‚Â¸Ã‚Â¥ {self.game_state.level} ÃƒÂ Ã‚Â¹Ã‚ÂÃƒÂ Ã‚Â¸Ã‚Â¥ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â§! ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°")
             
-        # à¸ªà¸±à¹ˆà¸‡à¸­à¸±à¸›à¹€à¸”à¸•à¸«à¸™à¹‰à¸²à¸ˆà¸­ UI
+        # Refresh the HUD after collecting the drop.
         self.map_screen.update_hud()
         
-        # Delete itself (à¹‚à¸„à¹‰à¸”à¸¥à¸šà¸£à¸¹à¸›à¹à¸£à¹ˆà¸—à¸´à¹‰à¸‡à¹€à¸«à¸¡à¸·à¸­à¸™à¹€à¸”à¸´à¸¡)
+        # Remove the drop widget after it is collected.
         if self.parent:
             self.parent.remove_widget(self)
         # Delete itself
@@ -391,7 +391,7 @@ class MapScreen(Screen):
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
         
-        # --- à¸£à¸°à¸šà¸šà¸­à¸±à¸›à¹€à¸à¸£à¸” (à¸¢à¹‰à¸²à¸¢à¸¡à¸²à¹„à¸§à¹‰à¸—à¸µà¹ˆà¸™à¸µà¹ˆà¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸«à¹‰à¸„à¹ˆà¸²à¹„à¸¡à¹ˆà¸«à¸²à¸¢) ---
+        # Keep upgrade costs on this screen instance.
         self.pickaxe_level = 1
         self.upgrade_costs = {
             2: {"stone": 10},
@@ -459,7 +459,7 @@ class MapScreen(Screen):
              overlay.disabled = True
 
     def format_torch_time(self):
-        # แปลงเวลาให้อ่านง่ายบน HUD
+        # Format the torch timer for the HUD.
         total_seconds = max(0, int(self.game_state.torch_time_left))
         minutes = total_seconds // 60
         seconds = total_seconds % 60
@@ -547,17 +547,17 @@ class MapScreen(Screen):
             self.interact_action()
             return
 
-        # Dev Tool: à¸à¸”à¸›à¸¸à¹ˆà¸¡ 'P' à¹€à¸žà¸·à¹ˆà¸­à¸”à¸¹à¸žà¸´à¸à¸±à¸”à¸—à¸µà¹ˆà¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆ
+        # Debug shortcut for checking the current grid cell.
         #if _codepoint == 'p' or key == 112:
         #    player = self.ids.player_character
-           # à¸«à¸²à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£
+           # Find the player center point.
         #    player_cx = player.x + (player.width / 2.0)
         #    player_cy = player.y + (player.height / 2.0)
             
-            # à¹à¸›à¸¥à¸‡à¹€à¸›à¹‡à¸™à¸žà¸´à¸à¸±à¸” Grid
+            # Convert the player position to grid coordinates.
         #    grid_x = int(player_cx / 120)
         #    grid_y = int(player_cy / 120)
-        #    print(f"ðŸ“ à¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸¢à¸·à¸™à¸­à¸¢à¸¹à¹ˆà¸—à¸µà¹ˆà¸žà¸´à¸à¸±à¸”: ({grid_x}, {grid_y})")
+        #    print(f"Player grid: ({grid_x}, {grid_y})")
 
     def interact_action(self):
         """Check distance to NPC and open Sell UI if close enough"""
@@ -582,7 +582,7 @@ class MapScreen(Screen):
             print("NPC is too far away.")
 
     def toggle_sell_menu(self):
-        """à¹€à¸›à¸´à¸”/à¸›à¸´à¸” à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸‚à¸²à¸¢à¸‚à¸­à¸‡"""
+        """Open or close the merchant overlay."""
         overlay = self.ids.sell_overlay
         if overlay.disabled:
              overlay.opacity = 1
@@ -771,7 +771,7 @@ class MapScreen(Screen):
     def update_torch_state(self, dt):
         torch_expired = self.game_state.tick_torch(dt)
         if torch_expired:
-            # ถ้าไฟหมด ให้ใช้คบเพลิงอันถัดไป
+            # Auto-use the next torch when the current one runs out.
             self.auto_use_torch_if_needed()
 
         self.update_hud()
@@ -810,7 +810,7 @@ class MapScreen(Screen):
                 size=(max(0, clipped_right - clipped_left), max(0, fog_overlay.top - clipped_top)),
             )
 
-        # วาดหมอกรอบจุดที่ผู้เล่นมองเห็น
+        # Draw the fog around the player vision area.
         fog_overlay.canvas.after.clear()
         with fog_overlay.canvas.after:
             draw_band(
@@ -877,71 +877,71 @@ class MapScreen(Screen):
         elif new_y > world.height - player.height:
             new_y = world.height - player.height
 
-        # --- à¸£à¸°à¸šà¸šà¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸à¸²à¸£à¸Šà¸™ (à¸«à¸´à¸™/à¹à¸£à¹ˆ/à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡) ---
+        # Check collisions against water and ore blocks.
         inset_x = 25  
         inset_y = 20  
         pw = player.width - inset_x * 2
         ph = player.height - inset_y * 2
 
         def hits_solid(px, py):
-            """à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸²à¸à¸£à¸­à¸šà¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£à¸—à¸±à¸šà¸‹à¹‰à¸­à¸™à¸à¸±à¸šà¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ"""
+            """Return True when the sampled point hits a solid area."""
             gs = self.game_state
             left = px + inset_x
             right = px + inset_x + pw
             bottom = py + inset_y
             top = py + inset_y + ph
             
-            # à¹€à¸Šà¹‡à¸à¸ˆà¸¸à¸”à¸—à¸±à¹‰à¸‡ 4 à¸¡à¸¸à¸¡ à¹à¸¥à¸°à¸ˆà¸¸à¸”à¸à¸¶à¹ˆà¸‡à¸à¸¥à¸²à¸‡à¸‚à¸­à¸‡à¸à¸£à¸­à¸šà¸•à¸±à¸§à¸¥à¸°à¸„à¸£
+            # Test the corners and middle points of the player bounds.
             for cx in [left, (left + right) / 2, right]:
                 for cy in [bottom, (bottom + top) / 2, top]:
                     
-                    # 1. à¹€à¸Šà¹‡à¸à¸à¸²à¸£à¸Šà¸™à¸à¸±à¸šà¸™à¹‰à¸³ 
+                    # Stop movement when the sampled point is on water.
                     if hasattr(gs, 'is_water_tile') and gs.is_water_tile(cx, cy):
                         return True
                         
-                    # 2. à¹€à¸Šà¹‡à¸à¸à¸²à¸£à¸Šà¸™à¸à¸±à¸šà¸«à¸´à¸™à¸«à¸£à¸·à¸­à¹à¸£à¹ˆ (à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ˆà¸²à¸ Grid)
-                    # à¹à¸›à¸¥à¸‡à¸žà¸´à¸à¸±à¸” Pixel à¹ƒà¸«à¹‰à¹€à¸›à¹‡à¸™à¸žà¸´à¸à¸±à¸” Grid (à¸«à¸²à¸£à¸”à¹‰à¸§à¸¢à¸‚à¸™à¸²à¸”à¸šà¸¥à¹‡à¸­à¸ 120)
+                    # Stop movement when the sampled point touches an ore hitbox.
+                    # Convert the sampled pixel position to grid coordinates.
                     grid_x = int(cx / 120)
                     grid_y = int(cy / 120)
                     
-                    # à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸§à¹ˆà¸²à¸žà¸´à¸à¸±à¸”à¸¢à¸±à¸‡à¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸‚à¸­à¸šà¹€à¸‚à¸•à¹à¸œà¸™à¸—à¸µà¹ˆ
+                    # Look up the ore block at the sampled grid cell.
                     if gs.grid_map[grid_y][grid_x] is not None:
                                 # ==========================================
-                                # à¸­à¸±à¸›à¹€à¸”à¸•à¹ƒà¸«à¸¡à¹ˆ: à¸šà¸µà¸šà¸à¸£à¸­à¸šà¸à¸²à¸£à¸Šà¸™ (Hitbox) à¹ƒà¸«à¹‰à¹€à¸¥à¹‡à¸à¸à¸§à¹ˆà¸²à¸£à¸¹à¸›à¸ à¸²à¸žà¸ˆà¸£à¸´à¸‡
+                                # Shrink the ore hitbox so movement feels less sticky.
                                 # ==========================================
                                 visual_size = 45 
                                 offset = (120 - visual_size) / 2
                                 
-                                # --- à¸›à¸£à¸±à¸šà¸£à¸°à¸¢à¸°à¸„à¸§à¸²à¸¡à¸Šà¸´à¸”à¸•à¸£à¸‡à¸™à¸µà¹‰à¸„à¸£à¸±à¸š ---
-                                # à¸¢à¸´à¹ˆà¸‡à¹ƒà¸ªà¹ˆà¹€à¸¥à¸‚à¹€à¸¢à¸­à¸° à¸¢à¸´à¹ˆà¸‡à¹€à¸”à¸´à¸™à¸—à¸°à¸¥à¸¸à¹€à¸‚à¹‰à¸²à¹„à¸›à¹ƒà¸à¸¥à¹‰à¹à¸£à¹ˆà¹„à¸”à¹‰à¸¡à¸²à¸à¸‚à¸¶à¹‰à¸™
-                                ore_inset_x = 10  # à¸¢à¸­à¸¡à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¸‹à¹‰à¸­à¸™à¸—à¸±à¸šà¸”à¹‰à¸²à¸™à¸‹à¹‰à¸²à¸¢/à¸‚à¸§à¸² à¹„à¸”à¹‰ 10 à¸žà¸´à¸à¹€à¸‹à¸¥
-                                ore_inset_y = 15  # à¸¢à¸­à¸¡à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¸‹à¹‰à¸­à¸™à¸—à¸±à¸šà¸”à¹‰à¸²à¸™à¸šà¸™/à¸¥à¹ˆà¸²à¸‡ à¹„à¸”à¹‰ 15 à¸žà¸´à¸à¹€à¸‹à¸¥
+                                # Tune the ore hitbox for smoother movement.
+                                # Higher inset values let the player slide closer.
+                                ore_inset_x = 10  # Allow a small overlap on left and right.
+                                ore_inset_y = 15  # Allow a small overlap on top and bottom.
                                 
                                 ore_left = (grid_x * 120) + offset + ore_inset_x
                                 ore_right = (grid_x * 120) + offset + visual_size - ore_inset_x
                                 ore_bottom = (grid_y * 120) + offset + ore_inset_y
                                 ore_top = (grid_y * 120) + offset + visual_size - ore_inset_y
                                 
-                                # à¹€à¸Šà¹‡à¸à¸§à¹ˆà¸²à¸ˆà¸¸à¸”à¸žà¸´à¸à¸±à¸” à¹€à¸«à¸¢à¸µà¸¢à¸šà¹‚à¸”à¸™ Hitbox à¸—à¸µà¹ˆà¸–à¸¹à¸à¸šà¸µà¸šà¹à¸¥à¹‰à¸§à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ
+                                # Block movement when the sampled point enters the hitbox.
                                 if ore_left <= cx <= ore_right and ore_bottom <= cy <= ore_top:
                                     return True
                                 
             return False
 
-        # --- à¹ƒà¸Šà¹‰à¹€à¸—à¸„à¸™à¸´à¸„ Wall Sliding (à¹ƒà¸«à¹‰à¹€à¸”à¸´à¸™à¹„à¸–à¸à¸³à¹à¸žà¸‡à¹„à¸”à¹‰) ---
-        # à¸—à¸”à¸ªà¸­à¸šà¸à¸²à¸£à¸‚à¸¢à¸±à¸šà¹à¸à¸™ X à¸à¹ˆà¸­à¸™
+        # Use wall sliding so the player can move along obstacles.
+        # Try the X movement first.
         if hits_solid(new_x, player.y):
-            new_x = player.x  # à¸–à¹‰à¸²à¸Šà¸™à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡ à¹ƒà¸«à¹‰à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡ X à¸à¸¥à¸±à¸šà¸¡à¸²à¸—à¸µà¹ˆà¹€à¸”à¸´à¸¡
+            new_x = player.x  # Cancel the X movement if it hits a solid tile.
 
-        # à¸—à¸”à¸ªà¸­à¸šà¸à¸²à¸£à¸‚à¸¢à¸±à¸šà¹à¸à¸™ Y
+        # Then try the Y movement.
         if hits_solid(new_x, new_y):
-            new_y = player.y  # à¸–à¹‰à¸²à¸Šà¸™à¸ªà¸´à¹ˆà¸‡à¸à¸µà¸”à¸‚à¸§à¸²à¸‡ à¹ƒà¸«à¹‰à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡ Y à¸à¸¥à¸±à¸šà¸¡à¸²à¸—à¸µà¹ˆà¹€à¸”à¸´à¸¡
+            new_y = player.y  # Cancel the Y movement if it hits a solid tile.
 
-        # à¸­à¸±à¸›à¹€à¸”à¸•à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¸ˆà¸£à¸´à¸‡à¸‚à¸­à¸‡à¸•à¸±à¸§à¸¥à¸°à¸„à¸£
+        # Apply the final player position.
         player.x = new_x
         player.y = new_y
 
-        # --- à¸­à¸±à¸›à¹€à¸”à¸•à¸à¸¥à¹‰à¸­à¸‡à¹à¸¥à¸° Minimap (à¸£à¸°à¸šà¸šà¹€à¸”à¸´à¸¡à¸‚à¸­à¸‡à¸„à¸¸à¸“) ---
+        # Update the camera and minimap with the new position.
         world.x, world.y = self.camera.update(
             player_pos=(player.x, player.y),
             player_size=(player.width, player.height),
@@ -963,7 +963,7 @@ class MapScreen(Screen):
         self.update_fog_overlay()
 
     def toggle_upgrade_menu(self):
-        """à¹€à¸›à¸´à¸”/à¸›à¸´à¸” à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸­à¸±à¸›à¹€à¸à¸£à¸”"""
+        """Open or close the upgrade overlay."""
         overlay = self.ids.upgrade_overlay
         if overlay.disabled:
             overlay.opacity = 1
@@ -974,7 +974,7 @@ class MapScreen(Screen):
             overlay.disabled = True
 
     def update_upgrade_ui(self):
-        """à¸­à¸±à¸›à¹€à¸”à¸•à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡à¸£à¸²à¸„à¸²à¹ƒà¸™à¸«à¸™à¹‰à¸²à¸ˆà¸­"""
+        """Refresh the pickaxe upgrade panel."""
         next_level = self.pickaxe_level + 1
         
         if next_level in self.upgrade_costs:
@@ -991,21 +991,21 @@ class MapScreen(Screen):
             self.ids.btn_buy_upgrade.text = "MAXED OUT"
 
     def buy_upgrade(self):
-        """à¹€à¸¡à¸·à¹ˆà¸­à¸à¸”à¸›à¸¸à¹ˆà¸¡à¸‹à¸·à¹‰à¸­à¸­à¸±à¸›à¹€à¸à¸£à¸”"""
+        """Buy the next pickaxe upgrade if the player can afford it."""
         next_level = self.pickaxe_level + 1
         if next_level not in self.upgrade_costs:
-            return # à¹€à¸¥à¹€à¸§à¸¥à¸•à¸±à¸™à¹à¸¥à¹‰à¸§
+            return  # Already at the maximum upgrade level.
 
         costs = self.upgrade_costs[next_level]
         
-        # 1. à¹€à¸Šà¹‡à¸à¸§à¹ˆà¸²à¹à¸£à¹ˆà¹ƒà¸™à¸à¸£à¸°à¹€à¸›à¹‹à¸²à¸¡à¸µà¸žà¸­à¸ˆà¹ˆà¸²à¸¢à¹„à¸«à¸¡?
+        # Check whether the inventory has all required ores.
         can_afford = True
         for ore, req_amount in costs.items():
             if self.game_state.inventory.get(ore, 0) < req_amount:
                 can_afford = False
                 break
                 
-        # 2. à¸–à¹‰à¸²à¸¡à¸µà¹à¸£à¹ˆà¸žà¸­ à¹ƒà¸«à¹‰à¸«à¸±à¸à¹à¸£à¹ˆà¹à¸¥à¸°à¸­à¸±à¸›à¹€à¸à¸£à¸”
+        # Spend the ores and apply the upgrade.
         if can_afford:
             for ore, req_amount in costs.items():
                 self.game_state.inventory[ore] -= req_amount
@@ -1013,15 +1013,15 @@ class MapScreen(Screen):
                 
             self.pickaxe_level += 1
             
-            # --- à¸«à¸±à¸§à¹ƒà¸ˆà¸ªà¸³à¸„à¸±à¸: à¸—à¸³à¹ƒà¸«à¹‰à¸‚à¸¸à¸”à¹€à¸£à¹‡à¸§à¸‚à¸¶à¹‰à¸™! ---
+            # Speed up the mining animation after the upgrade.
             player = self.ids.player_character
-            # à¸¥à¸”à¹€à¸§à¸¥à¸²à¸­à¸™à¸´à¹€à¸¡à¸Šà¸±à¸™à¸•à¸­à¸™à¸‚à¸¸à¸”à¸¥à¸‡ (à¸¢à¸´à¹ˆà¸‡à¸„à¹ˆà¸²à¸™à¹‰à¸­à¸¢ à¸¢à¸´à¹ˆà¸‡à¸ªà¸±à¸šà¸ˆà¸­à¸šà¹„à¸§)
+            # Lower values make the mining swing finish faster.
             player.mine_speed = max(0.01, player.mine_speed - 0.01) 
             
             print(f"Upgraded to Level {self.pickaxe_level}! New Speed: {player.mine_speed}")
-            self.update_upgrade_ui() # à¸£à¸µà¹€à¸Ÿà¸£à¸Šà¸«à¸™à¹‰à¸²à¸ˆà¸­
+            self.update_upgrade_ui()  # Refresh the upgrade panel after buying.
         else:
-            # à¸–à¹‰à¸²à¹à¸£à¹ˆà¹„à¸¡à¹ˆà¸žà¸­ à¹ƒà¸«à¹‰à¸›à¸¸à¹ˆà¸¡à¸šà¸­à¸à¹ƒà¸šà¹‰
+            # Show a simple warning when ores are not enough.
             self.ids.btn_buy_upgrade.text = "NOT ENOUGH ORES!"
 
 
