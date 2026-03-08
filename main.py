@@ -516,7 +516,15 @@ class MapScreen(Screen):
         self.ids.hud_money_label.text = f"Money: ${int(self.game_state.money)}"
         self.ids.hud_torch_label.text = f"Torch: {self.game_state.torch_count} | {self.format_torch_time()}"
         self.ids.stamina_label.text = f"Energy: {self.game_state.current_stamina} / {self.game_state.max_stamina}"
-
+        label = self.ids.stamina_label
+        label.text = f"Energy: {self.game_state.current_stamina} / {self.game_state.max_stamina}"
+        
+        # ถ้าพลังงานต่ำกว่า 20% ให้เปลี่ยนเป็นสีแดง
+        if self.game_state.current_stamina < 20:
+            label.color = (1, 0, 0, 1) # สีแดง
+        else:
+            label.color = (0.2, 0.8, 1, 1) # สีฟ้าปกติ
+            
     def update_inventory_ui(self):
         # Update Header Labels
         cap_label = self.ids.inventory_capacity_label
