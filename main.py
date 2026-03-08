@@ -1,3 +1,4 @@
+import random
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -524,7 +525,7 @@ class MapScreen(Screen):
             label.color = (1, 0, 0, 1) # สีแดง
         else:
             label.color = (0.2, 0.8, 1, 1) # สีฟ้าปกติ
-            
+
     def update_inventory_ui(self):
         # Update Header Labels
         cap_label = self.ids.inventory_capacity_label
