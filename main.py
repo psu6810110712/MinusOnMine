@@ -188,7 +188,7 @@ class FloatingText(Label):
     def remove_myself(self, *args):
         if self.parent:
             self.parent.remove_widget(self)
-            
+
 class MiningParticle(Widget):
     def __init__(self, pos, color=(0.5, 0.5, 0.5, 1), **kwargs):
         super().__init__(**kwargs)
@@ -744,21 +744,21 @@ class MapScreen(Screen):
         player.current_frame = 0
         player.mine_timer = 0.0
         
-        # Pre-set first frame size immediately to prevent single frame flicker
+        # Pre-set first frame size
         orig_w, orig_h = player.attack_frame_sizes[player.direction][0]
         scaled_w = orig_w * 1.5625
         scaled_h = orig_h * 1.538
         player.render_size = [scaled_w, scaled_h]
         player.render_offset = [(100 - scaled_w) / 2.0, 0]
         
-        # 1. Determine the target coordinate based on player center and direction
+        # 1. Determine target coordinate
         player_cx = player.x + (player.width / 2.0)
         player_cy = player.y + (player.height / 2.0)
         
         target_x = player_cx
         target_y = player_cy
-        self.shake_screen(intensity=4)
-        # Grid tiles are 120x120. Offset by 80 to "reach" into the next tile
+        self.shake_screen(intensity=4) #
+
         reach_distance = 80
         if player.direction == "up":
             target_y += reach_distance
@@ -769,30 +769,24 @@ class MapScreen(Screen):
         elif player.direction == "right":
             target_x += reach_distance
             
-        # 2. Convert target pixel coordinates to grid coordinates
+        # 2. Convert to grid
         grid_x = int(target_x / 120)
         grid_y = int(target_y / 120)
         
-        # Check boundaries
         if 0 <= grid_x < self.game_state.grid_width and 0 <= grid_y < self.game_state.grid_height:
-            # 3. Check if there is a block there
             if (grid_x, grid_y) in self.ore_blocks_dict:
                 block = self.ore_blocks_dict[(grid_x, grid_y)]
                 ore_type = block.ore_type
                 
-                # Update visual
-                block.mine()
-                del self.ore_blocks_dict[(grid_x, grid_y)]
+                block.mine() #
+                del self.ore_blocks_dict[(grid_x, grid_y)] #
+                self.game_state.grid_map[grid_y][grid_x] = None #
                 
-                # Update GameState backend
-                self.game_state.grid_map[grid_y][grid_x] = None
+                world = self.ids.world_layer #
+                drop_x = grid_x * 120 + 40 #
+                drop_y = grid_y * 120 + 40 #
                 
-                # Add to inventory
-                # We spawn an item drop which handles adding to inventory when animation completes
-                world = self.ids.world_layer
-                drop_x = grid_x * 120 + 40
-                drop_y = grid_y * 120 + 40
-                
+                # สปอนไอเทมดรอป
                 drop = ItemDrop(
                     start_pos=(drop_x, drop_y),
                     target_player=player,
@@ -800,14 +794,23 @@ class MapScreen(Screen):
                     ore_type=ore_type,
                     map_screen=self
                 )
-                world.add_widget(drop) 
+                world.add_widget(drop) #
                 drop.animate_to_player()
 
-                # Spawn Explosion Effect AFTER drop so it renders ON TOP
-                explode_x = (grid_x * 120) - 4
-                explode_y = (grid_y * 120) - 4
-                explosion = ExplosionEffect(pos=(explode_x, explode_y))
-                world.add_widget(explosion)
+                # สปอนเอฟเฟกต์ระเบิด
+                explode_x = (grid_x * 120) - 4 #
+                explode_y = (grid_y * 120) - 4 #
+                explosion = ExplosionEffect(pos=(explode_x, explode_y)) #
+                world.add_widget(explosion) #
+
+        
+                for _ in range(8):
+                    particle = MiningParticle(
+                        pos=(drop_x + random.randint(-20, 20), 
+                             drop_y + random.randint(-20, 20))
+                    )
+                    world.add_widget(particle)
+                
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
 
