@@ -468,9 +468,14 @@ class MapScreen(Screen):
     def update_hud(self):
         self.ids.level_label.text = f"Lv. {self.game_state.level}"
         self.ids.exp_label.text = f"EXP: {self.game_state.current_exp} / {self.game_state.exp_to_next_level}"
+<<<<<<< HEAD
         self.ids.hud_money_label.text = f"Money: ${int(self.game_state.money)}"
         self.ids.hud_torch_label.text = f"Torch: {self.game_state.torch_count} | {self.format_torch_time()}"
 
+=======
+        self.ids.stamina_label.text = f"Energy: {self.game_state.current_stamina} / {self.game_state.max_stamina}"
+    
+>>>>>>> 655041ec8458f08a85e276b95d555826c9de62a0
     def update_inventory_ui(self):
         # Update Header Labels
         cap_label = self.ids.inventory_capacity_label
@@ -691,8 +696,12 @@ class MapScreen(Screen):
 
     def mine_action(self):
         player = self.ids.player_character
-        
-        # Trigger animation state
+        if player.is_mining:
+            return
+        if not self.game_state.consume_stamina(5):
+            print("พลังงานหมด! ขุดไม่ได้แล้ว")
+            return  
+        self.update_hud()
         player.is_mining = True
         player.is_moving = False
         player.current_frame = 0
@@ -764,7 +773,6 @@ class MapScreen(Screen):
                 world.add_widget(explosion)
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
-
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
 
