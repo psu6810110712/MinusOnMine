@@ -21,63 +21,114 @@ class GameState:
             (10, 10), (10, 11) 
             ]
         
-        self.grid_map = []   # 2D list: None = ว่าง, "stone"/"coal"/... = แร่
-        self.generate_map()
+        self.surface_map = []
+        self.underground_map = []
+        self.current_depth = 0  # 0 = Surface, 1 = Underground
+        self.generate_maps()
         self.level = 1 # ระบบ level
         self.current_exp = 0
         self.exp_to_next_level = 100  # เริ่มต้นใช้ 100 EXP ในการขึ้นเลเวล 2
         self.max_stamina = 100
         self.current_stamina = 100
 
-    def generate_map(self):
-        """สุ่มวางแร่บน grid ตาม weight ใน ORES"""
+    @property
+    def grid_map(self):
+        """คืนค่าแผนที่ อิงตามความลึก (0: บนดิน, 1: ใต้ดิน)"""
+        return self.surface_map if self.current_depth == 0 else self.underground_map
+
+    def generate_maps(self):
+        """สุ่มวางแร่บน grid ให้เกิดเป็นกลุ่มๆ (Clustered)"""
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
             ore_pool.append((ore_id, ore_obj.weight))
 
-        self.grid_map = []
-        for y in range(self.grid_height):
-            row = []
-            for x in range(self.grid_width):
+        # 1. เริ่มต้นด้วยแผนที่ว่างเปล่า (None)
+        self.surface_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        self.underground_map = [[None for _ in range(self.grid_width)] for _ in range(self.grid_height)]
+        
+        # 2. ฟังก์ชันเช็กว่าตรงนี้วางอะไรได้ไหม (ไม่ติดน้ำ ไม่ต้นไม้)
+        def is_valid_tile(rx, ry):
+            if rx < 0 or rx >= self.grid_width or ry < 0 or ry >= self.grid_height:
+                return False
+            if (rx, ry) in self.forbidden_grids:
+                return False
                 
-                center_px = (x * 120) + 60
-                center_py = (y * 120) + 60
+            # เช็กจุดเกิด (Safe Spawn Zone) ให้ว่างเปล่าเสมอ
+            # จุดเกิดคือพิกัด Pixel (1000, 800) -> Grid ประมาณ (8, 6)
+            spawn_x, spawn_y = int(1000/120), int(800/120)
+            if abs(rx - spawn_x) <= 2 and abs(ry - spawn_y) <= 2:
+                return False # ในระยะ 5x5 รอบจุดเกิด ห้ามมีของแร่
+            
+            # เช็กน้ำ (Water)
+            center_px = (rx * 120) + 60
+            center_py = (ry * 120) + 60
+            safe_margin = 55
+            scan_points = [
+                (center_px, center_py),
+                (center_px - safe_margin, center_py), (center_px + safe_margin, center_py),
+                (center_px, center_py - safe_margin), (center_px, center_py + safe_margin)
+            ]
+            if hasattr(self, 'is_water_tile'):
+                for px, py in scan_points:
+                    if self.is_water_tile(px, py):
+                        return False
+            return True
 
-                # 1. เช็ก Blacklist ต้นไม้/ทางเดิน
-                if (x, y) in self.forbidden_grids:
-                    row.append(None)
-                    continue # ข้ามไปทำช่องถัดไปเลย
+        # 3. สุ่มหา "จุดศูนย์กลาง" (Seeds) ของแต่ละกลุ่มแร่
+        num_clusters = 15  # จำนวนกลุ่มแร่ในแผนที่
+        for _ in range(num_clusters):
+            seed_x = random.randint(0, self.grid_width - 1)
+            seed_y = random.randint(0, self.grid_height - 1)
+            
+            if not is_valid_tile(seed_x, seed_y) or self.underground_map[seed_y][seed_x] is not None:
+                continue # หาที่ลงไม่ได้ ข้ามไป
                 
-                safe_margin = 55  # ระยะห่างจากน้ำ (ตัวเลขยิ่งเยอะ แร่งยิ่งห่างน้ำ)
+            # สุ่มชนิดแร่ที่จะเกิดในกลุ่มนี้
+            cluster_ore_type = self._weighted_random_ore(ore_pool)
+            
+            # วางจุดศูนย์กลาง
+            self.underground_map[seed_y][seed_x] = cluster_ore_type
+            
+            # 4. ขยายกลุ่ม (Grow) รอบๆ จุดศูนย์กลาง
+            cluster_size = random.randint(3, 8) # รัศมีการเติบโตหรือจำนวนบล็อกในกลุ่ม
+            tiles_to_process = [(seed_x, seed_y)]
+            processed_count = 1
+            
+            while tiles_to_process and processed_count < cluster_size:
+                # หยิบ tile มาแพร่เชื้อ
+                curr_x, curr_y = tiles_to_process.pop(0)
                 
-                # สร้างจุดสแกน 5 จุด (ตรงกลาง, ซ้าย, ขวา, บน, ล่าง)
-                scan_points = [
-                    (center_px, center_py),
-                    (center_px - safe_margin, center_py),
-                    (center_px + safe_margin, center_py),
-                    (center_px, center_py - safe_margin),
-                    (center_px, center_py + safe_margin)
-                ]
+                # เช็ก 4 ทิศ (บน ล่าง ซ้าย ขวา)
+                neighbors = [(curr_x, curr_y-1), (curr_x, curr_y+1), (curr_x-1, curr_y), (curr_x+1, curr_y)]
+                random.shuffle(neighbors) # สุ่มลำดับทิศทางให้ดูเป็นธรรมชาติ
                 
-                is_near_water = False
-                if hasattr(self, 'is_water_tile'):
-                    for px, py in scan_points:
-                        if self.is_water_tile(px, py):
-                            is_near_water = True
-                            break # ถ้าระยะแตะน้ำปุ๊บ สั่งยกเลิกทันที
+                for nx, ny in neighbors:
+                    if is_valid_tile(nx, ny) and self.underground_map[ny][nx] is None:
+                        # มีโอกาส 70% ที่จะลามไปช่องนี้
+                        if random.random() < 0.70:
+                            self.underground_map[ny][nx] = cluster_ore_type
+                            tiles_to_process.append((nx, ny))
+                            processed_count += 1
+                            if processed_count >= cluster_size:
+                                break
+
+        # 5. เจาะทางเดินเพื่อให้ทั่วถึง (Broad Pathways)
+        # เจาะแนวตั้งประมาณ 2 เส้น และแนวนอนประมาณ 2 เส้น ให้มีความกว้าง 2 บล็อก
+        for _ in range(2):
+            path_x = random.randint(2, self.grid_width - 3)
+            for ry in range(self.grid_height):
+                self.underground_map[ry][path_x] = None
+                self.underground_map[ry][path_x+1] = None
                 
-                # ถ้าอยู่ใกล้ขอบน้ำเกินไป ให้ข้ามช่องนี้ไป
-                if is_near_water:
-                    row.append(None)
-                else:
-                    # 3. ถ้าเป็นพื้นที่ปลอดภัยจริงๆ ให้สุ่มเกิดแร่ 60%
-                    if random.random() < 0.6:
-                        ore = self._weighted_random_ore(ore_pool)
-                        row.append(ore)
-                    else:
-                        row.append(None)
-                        
-            self.grid_map.append(row)
+        for _ in range(2):
+            path_y = random.randint(2, self.grid_height - 3)
+            for rx in range(self.grid_width):
+                self.underground_map[path_y][rx] = None
+                self.underground_map[path_y+1][rx] = None
+
+        # 6. วางทางเข้าเหมืองบนแผนที่บนดิน (Surface Map)
+        # ให้ไว้ใกล้ๆ จุดเกิด สมมติว่าเป็นพิกัด (10, 8)
+        self.surface_map[8][10] = "entrance"
 
     def _weighted_random_ore(self, ore_pool):
         """สุ่มเลือกแร่ตาม weight (weight สูง = ได้บ่อย)"""

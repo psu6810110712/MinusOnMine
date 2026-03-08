@@ -135,10 +135,19 @@ class OreBlock(Widget):
             Color(*self.color)
             
             # --- กำหนดขนาดแร่ให้เล็กลง (เช่น 50x50) ---
-            visual_size = 40
+            visual_size = 80  # ขยายให้ใหญ่ขึ้นจาก 40 เป็น 80
             # คำนวณจุดกึ่งกลางของช่อง 120x120 (ให้อยู่ตรงกลางกริด)
             offset = (120 - visual_size) / 2  
             
+            # 1. วาดเงาดำๆ ใต้แร่เพื่อมิติ
+            Color(0, 0, 0, 0.3)
+            Ellipse(
+                pos=(self.pos[0] + offset + 5, self.pos[1] + offset - 10),
+                size=(visual_size - 10, visual_size * 0.4)
+            )
+            
+            # 2. วาดตัวภาพแร่
+            Color(*self.color)
             if self.image_source:
                 self.rect = Rectangle(
                     pos=(self.pos[0] + offset, self.pos[1] + offset), 
@@ -177,12 +186,40 @@ class FloatingText(Label):
         if self.parent:
             self.parent.remove_widget(self)
 
+
+class MineEntrance(Widget):
+    """Widget representing the stairs or hole leading down to the Underground map."""
+    def __init__(self, grid_x, grid_y, **kwargs):
+        super().__init__(**kwargs)
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.size_hint = (None, None)
+        self.size = (120, 120)
+        self.pos = (self.grid_x * 120, self.grid_y * 120)
+
+        with self.canvas:
+            visual_size = 90
+            offset = (120 - visual_size) / 2
+            
+            # วาดกรอบทางลงเหมือง (สีน้ำตาล/เทาเข้ม)
+            Color(0.4, 0.3, 0.2, 1)
+            self.rect = Rectangle(
+                pos=(self.pos[0] + offset, self.pos[1] + offset), 
+                size=(visual_size, visual_size)
+            )
+            # เงาดำตรงกลางจำลองหลุมลึก
+            Color(0, 0, 0, 0.8)
+            self.inner_rect = Rectangle(
+                pos=(self.pos[0] + offset + 15, self.pos[1] + offset + 15), 
+                size=(visual_size - 30, visual_size - 30)
+            )
+
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
     def __init__(self, start_pos, target_player, game_state, map_screen, ore_type, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        self.size = (40, 40) # Smaller than a block
+        self.size = (60, 60) # Scaled up to match 80px ores
         self.pos = start_pos
         self.ore_type = ore_type
         self.game_state = game_state
@@ -393,10 +430,11 @@ class MapScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.keys_pressed = set()
-        self.move_speed = 200
+        self.move_speed = 250
         self.camera = CameraController(zoom=self.camera_zoom)
         self.minimap_renderer = MinimapRenderer()
         self.game_state = GameState()
+        self.surface_coords = (0, 0)
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
         Clock.schedule_interval(self.auto_regen_stamina, 1.0)
@@ -431,8 +469,12 @@ class MapScreen(Screen):
         # Iterate through the grid and instantiate OreBlocks
         for y, row in enumerate(self.game_state.grid_map):
             for x, cell in enumerate(row):
-                if cell is not None:  # There is an ore here
-                    block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                if cell is not None:  
+                    if cell == "entrance":
+                        block = MineEntrance(grid_x=x, grid_y=y)
+                    else:
+                        block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                    
                     self.ore_blocks_dict[(x, y)] = block
                     # Add to world layer. We add it but want player to render on top
                     # so we insert at the back of the widget tree (index > player index)
@@ -564,6 +606,12 @@ class MapScreen(Screen):
             # 3. Check if there is a block there
             if (grid_x, grid_y) in self.ore_blocks_dict:
                 block = self.ore_blocks_dict[(grid_x, grid_y)]
+                
+                if isinstance(block, MineEntrance):
+                    print("Found Mine Entrance! Descending to Underground...")
+                    self.enter_mine()
+                    return
+                
                 ore_type = block.ore_type
                 
                 # Update visual
@@ -590,6 +638,46 @@ class MapScreen(Screen):
                 drop.animate_to_player()
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
+
+    def enter_mine(self):
+        player = self.ids.player_character
+        
+        # 1. Save surface coordinates
+        self.surface_coords = (player.x, player.y)
+        
+        # 2. Change depth and reload map
+        self.game_state.current_depth = 1
+        self.render_initial_map()
+        
+        # 3. Spawn player at a safe starting point in the mine (e.g. center)
+        world = self.ids.world_layer
+        player.x = (world.width - player.width) / 2.0
+        player.y = (world.height - player.height) / 2.0
+        
+        # 4. Show the "Exit Mine" button
+        btn = self.ids.btn_exit_mine
+        btn.opacity = 1
+        btn.disabled = False
+        
+        print("Descended to the mine layer.")
+
+    def exit_mine(self):
+        player = self.ids.player_character
+        
+        # 1. Change depth back to Surface and reload map
+        self.game_state.current_depth = 0
+        self.render_initial_map()
+        
+        # 2. Restore previous surface coordinates so player appears exactly where they descended
+        player.x, player.y = self.surface_coords
+        
+        # 3. Hide the "Exit Mine" button
+        btn = self.ids.btn_exit_mine
+        btn.opacity = 0
+        btn.disabled = True
+        
+        print("Returned to the surface.")
+
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
 
@@ -630,19 +718,24 @@ class MapScreen(Screen):
         player.update_animation(dt)
 
         # --- World boundary clamping ---
+        # ผูกขอบเขตแผนที่ให้พอดีกับตาราง Grid (ตารางละ 120px)
+        max_x = (self.game_state.grid_width * 120) - player.width
+        max_y = (self.game_state.grid_height * 120) - player.height
+        
         if new_x < 0:
             new_x = 0
-        elif new_x > world.width - player.width:
-            new_x = world.width - player.width
+        elif new_x > max_x:
+            new_x = max_x
 
         if new_y < 0:
             new_y = 0
-        elif new_y > world.height - player.height:
-            new_y = world.height - player.height
+        elif new_y > max_y:
+            new_y = max_y
 
         # --- ระบบตรวจสอบการชน (หิน/แร่/สิ่งกีดขวาง) ---
-        inset_x = 25  
-        inset_y = 20  
+        # ปรับ Hitbox ตัวละครให้พอดีช่วงล่างของ Sprite มากขึ้น
+        inset_x = 35  # บีบด้านซ้ายขวาเข้ามา
+        inset_y = 15  # บีบด้านบนล่าง (ให้หัวทับของได้นิดหน่อย)
         pw = player.width - inset_x * 2
         ph = player.height - inset_y * 2
 
@@ -670,15 +763,15 @@ class MapScreen(Screen):
                     # ตรวจสอบว่าพิกัดยังอยู่ในขอบเขตแผนที่
                     if gs.grid_map[grid_y][grid_x] is not None:
                                 # ==========================================
-                                # อัปเดตใหม่: บีบกรอบการชน (Hitbox) ให้เล็กกว่ารูปภาพจริง
+                                # อัปเดตใหม่: ปรับให้สมดุลกับ 80px Visual Size
                                 # ==========================================
-                                visual_size = 45 
+                                visual_size = 80 
                                 offset = (120 - visual_size) / 2
                                 
                                 # --- ปรับระยะความชิดตรงนี้ครับ ---
                                 # ยิ่งใส่เลขเยอะ ยิ่งเดินทะลุเข้าไปใกล้แร่ได้มากขึ้น
                                 ore_inset_x = 10  # ยอมให้เดินซ้อนทับด้านซ้าย/ขวา ได้ 10 พิกเซล
-                                ore_inset_y = 15  # ยอมให้เดินซ้อนทับด้านบน/ล่าง ได้ 15 พิกเซล
+                                ore_inset_y = 20  # ยอมให้ทับด้านบน/ล่าง ได้ลึกขึ้น (ตัวละครเดินบังโคนต้นแร่ได้)
                                 
                                 ore_left = (grid_x * 120) + offset + ore_inset_x
                                 ore_right = (grid_x * 120) + offset + visual_size - ore_inset_x
@@ -691,18 +784,48 @@ class MapScreen(Screen):
                                 
             return False
 
-        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้) ---
-        # ทดสอบการขยับแกน X ก่อน
-        if hits_solid(new_x, player.y):
-            new_x = player.x  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง X กลับมาที่เดิม
+        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้ สมูธขึ้น) ---
+        # 1. ทดสอบการขยับแกน X เดี่ยวๆ
+        x_col = hits_solid(new_x, player.y)
+        # 2. ทดสอบการขยับแกน Y เดี่ยวๆ
+        y_col = hits_solid(player.x, new_y)
+        # 3. ทดสอบขยับทั้ง 2 แกนพร้อมกัน (ทแยง)
+        xy_col = hits_solid(new_x, new_y)
 
-        # ทดสอบการขยับแกน Y
-        if hits_solid(new_x, new_y):
-            new_y = player.y  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง Y กลับมาที่เดิม
+        # ตัดสินใจการเดิน
+        if not xy_col:
+            # เดินทแยงได้ปกติ
+            pass
+        elif not x_col and y_col:
+            # ติดแกน Y แต่ X ว่าง -> ไถไปตามแกน X
+            new_y = player.y
+        elif not y_col and x_col:
+            # ติดแกน X แต่ Y ว่าง -> ไถไปตามแกน Y
+            new_x = player.x
+        else:
+            # ติดหมด ขยับไม่ได้เลย
+            new_x = player.x
+            new_y = player.y
 
         # อัปเดตตำแหน่งจริงของตัวละคร
         player.x = new_x
         player.y = new_y
+
+        # --- Dynamic Z-Index Sorting (Depth Sorting) ---
+        # นำ Widget ทั้งหมดใน world (ที่เป็น OreBlock/Player) มาเรียงลำดับวาดใหม่
+        # โดยใครยึดแกน Y ต่ำกว่า (อยู่ด้านล่างจอ) ต้องวาดทีหลังเพื่อให้ทับคนอื่น
+        # ป้องกันกระตุก: เรียงเฉพาะตอนที่มีการขยับเท่านั้น
+        if is_moving_now:
+            children = list(world.children)
+            # เราจะไม่เรียง widget ที่อาจไม่ใช่ของบนพื้น (เช่น effect บางอย่าง)
+            # แต่ปกติใน world ตอนนี้มีแค่ Player, OreBlock, ItemDrop
+            # เรียงจากแกน y มาก ไป y น้อย (Kivy วาดจาก index 0 ไป -1)
+            # ดังนั้นคน y มากสุด (อยู่ข้างบนสุด) วาดก่อน (index ต้นๆ)
+            children.sort(key=lambda w: w.y, reverse=True)
+            
+            world.clear_widgets()
+            for child in children:
+                world.add_widget(child)
 
         # --- อัปเดตกล้องและ Minimap (ระบบเดิมของคุณ) ---
         world.x, world.y = self.camera.update(
