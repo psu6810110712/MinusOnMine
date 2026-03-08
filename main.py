@@ -412,6 +412,7 @@ class MapScreen(Screen):
             world.add_widget(self.npc, index=len(world.children))
 
         self.render_initial_map()
+        self.auto_use_torch_if_needed()
         self.update_hud()
 
         Window.bind(on_key_down=self.on_keyboard_down)
@@ -437,6 +438,12 @@ class MapScreen(Screen):
                     # Add to world layer. We add it but want player to render on top
                     # so we insert at the back of the widget tree (index > player index)
                     world.add_widget(block, index=len(world.children))
+
+    def auto_use_torch_if_needed(self):
+        if self.game_state.has_active_torch():
+            return
+
+        self.game_state.use_torch()
 
     def toggle_inventory(self):
         overlay = self.ids.inventory_overlay
