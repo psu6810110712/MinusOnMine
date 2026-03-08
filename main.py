@@ -629,6 +629,10 @@ class MapScreen(Screen):
             )
             container.add_widget(empty_lbl)
 
+        torch_button = self.ids.buy_torch_button
+        torch_button.text = f"BUY TORCH (${self.game_state.torch_price})"
+        torch_button.disabled = self.game_state.money < self.game_state.torch_price
+
         self.recalculate_total_sell()
 
     def recalculate_total_sell(self):
@@ -640,6 +644,14 @@ class MapScreen(Screen):
                 total += child.subtotal
                 
         self.ids.total_sell_label.text = f"Total Earned: ${total}"
+
+    def buy_torch(self):
+        bought = self.game_state.buy_torch()
+        if not bought:
+            return
+
+        self.update_hud()
+        self.update_sell_ui()
 
     def confirm_sell(self):
         """Perform the transaction and close the menu"""
