@@ -669,14 +669,28 @@ class MapScreen(Screen):
                                 
             return False
 
-        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้) ---
-        # ทดสอบการขยับแกน X ก่อน
-        if hits_solid(new_x, player.y):
-            new_x = player.x  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง X กลับมาที่เดิม
+        # --- ใช้เทคนิค Wall Sliding (ให้เดินไถกำแพงได้ สมูธขึ้น) ---
+        # 1. ทดสอบการขยับแกน X เดี่ยวๆ
+        x_col = hits_solid(new_x, player.y)
+        # 2. ทดสอบการขยับแกน Y เดี่ยวๆ
+        y_col = hits_solid(player.x, new_y)
+        # 3. ทดสอบขยับทั้ง 2 แกนพร้อมกัน (ทแยง)
+        xy_col = hits_solid(new_x, new_y)
 
-        # ทดสอบการขยับแกน Y
-        if hits_solid(new_x, new_y):
-            new_y = player.y  # ถ้าชนสิ่งกีดขวาง ให้ตำแหน่ง Y กลับมาที่เดิม
+        # ตัดสินใจการเดิน
+        if not xy_col:
+            # เดินทแยงได้ปกติ
+            pass
+        elif not x_col and y_col:
+            # ติดแกน Y แต่ X ว่าง -> ไถไปตามแกน X
+            new_y = player.y
+        elif not y_col and x_col:
+            # ติดแกน X แต่ Y ว่าง -> ไถไปตามแกน Y
+            new_x = player.x
+        else:
+            # ติดหมด ขยับไม่ได้เลย
+            new_x = player.x
+            new_y = player.y
 
         # อัปเดตตำแหน่งจริงของตัวละคร
         player.x = new_x
