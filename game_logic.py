@@ -103,6 +103,20 @@ class GameState:
                             if processed_count >= cluster_size:
                                 break
 
+        # 5. เจาะทางเดินเพื่อให้ทั่วถึง (Broad Pathways)
+        # เจาะแนวตั้งประมาณ 2 เส้น และแนวนอนประมาณ 2 เส้น ให้มีความกว้าง 2 บล็อก
+        for _ in range(2):
+            path_x = random.randint(2, self.grid_width - 3)
+            for ry in range(self.grid_height):
+                self.grid_map[ry][path_x] = None
+                self.grid_map[ry][path_x+1] = None
+                
+        for _ in range(2):
+            path_y = random.randint(2, self.grid_height - 3)
+            for rx in range(self.grid_width):
+                self.grid_map[path_y][rx] = None
+                self.grid_map[path_y+1][rx] = None
+
     def _weighted_random_ore(self, ore_pool):
         """สุ่มเลือกแร่ตาม weight (weight สูง = ได้บ่อย)"""
         total_weight = sum(w for _, w in ore_pool)
