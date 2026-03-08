@@ -754,11 +754,19 @@ class MapScreen(Screen):
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
 
+    def update_torch_state(self, dt):
+        torch_expired = self.game_state.tick_torch(dt)
+        if torch_expired:
+            self.auto_use_torch_if_needed()
+
+        self.update_hud()
+
     def update(self, dt):
+        self.update_torch_state(dt)
+
         # Don't update player movement if inventory is open
         if not self.ids.inventory_overlay.disabled:
             return
-            
         step = self.move_speed * dt
         player = self.ids.player_character
         world = self.ids.world_layer
