@@ -188,6 +188,23 @@ class FloatingText(Label):
     def remove_myself(self, *args):
         if self.parent:
             self.parent.remove_widget(self)
+            
+class MiningParticle(Widget):
+    def __init__(self, pos, color=(0.5, 0.5, 0.5, 1), **kwargs):
+        super().__init__(**kwargs)
+        self.size = (random.randint(4, 8), random.randint(4, 8))
+        self.pos = pos
+        with self.canvas:
+            Color(rgba=color)
+            Ellipse(pos=self.pos, size=self.size)
+        
+        # สุ่มทิศทางกระเด็น
+        target_x = self.x + random.randint(-60, 60)
+        target_y = self.y + random.randint(20, 80)
+        
+        anim = Animation(x=target_x, y=target_y, opacity=0, duration=0.6)
+        anim.bind(on_complete=lambda *args: self.parent.remove_widget(self) if self.parent else None)
+        anim.start(self)
 
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
