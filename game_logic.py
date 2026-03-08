@@ -43,6 +43,12 @@ class GameState:
                 return False
             if (rx, ry) in self.forbidden_grids:
                 return False
+                
+            # เช็กจุดเกิด (Safe Spawn Zone) ให้ว่างเปล่าเสมอ
+            # จุดเกิดคือพิกัด Pixel (1000, 800) -> Grid ประมาณ (8, 6)
+            spawn_x, spawn_y = int(1000/120), int(800/120)
+            if abs(rx - spawn_x) <= 2 and abs(ry - spawn_y) <= 2:
+                return False # ในระยะ 5x5 รอบจุดเกิด ห้ามมีของแร่
             
             # เช็กน้ำ (Water)
             center_px = (rx * 120) + 60
