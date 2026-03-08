@@ -164,6 +164,34 @@ class OreBlock(Widget):
             self.parent.remove_widget(self)
 
 
+
+class MineEntrance(Widget):
+    """Widget representing the stairs or hole leading down to the Underground map."""
+    def __init__(self, grid_x, grid_y, **kwargs):
+        super().__init__(**kwargs)
+        self.grid_x = grid_x
+        self.grid_y = grid_y
+        self.size_hint = (None, None)
+        self.size = (120, 120)
+        self.pos = (self.grid_x * 120, self.grid_y * 120)
+
+        with self.canvas:
+            visual_size = 90
+            offset = (120 - visual_size) / 2
+            
+            # วาดกรอบทางลงเหมือง (สีน้ำตาล/เทาเข้ม)
+            Color(0.4, 0.3, 0.2, 1)
+            self.rect = Rectangle(
+                pos=(self.pos[0] + offset, self.pos[1] + offset), 
+                size=(visual_size, visual_size)
+            )
+            # เงาดำตรงกลางจำลองหลุมลึก
+            Color(0, 0, 0, 0.8)
+            self.inner_rect = Rectangle(
+                pos=(self.pos[0] + offset + 15, self.pos[1] + offset + 15), 
+                size=(visual_size - 30, visual_size - 30)
+            )
+
 class ItemDrop(Widget):
     """Widget representing a dropped item flying towards the player"""
     def __init__(self, start_pos, target_player, game_state, map_screen, ore_type, **kwargs):
