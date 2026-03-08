@@ -348,44 +348,26 @@
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-<<<<<<< HEAD
             size: 240, 140
             pos_hint: {'right': 0.99, 'top': 0.88}
             padding: 10
             canvas.before:
                 Color:
                     rgba: 0.1, 0.1, 0.1, 0.7
-=======
-            
-            # 1. ขยายความสูงกล่องตรงนี้ครับ (จาก 70 เป็น 110)
-            size: 240, 120
-            
-            pos_hint: {'x': 0.01, 'top': 0.75} 
-            padding: 10
-            canvas.before:
-                Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7 
->>>>>>> a681ca1bec5077f90a5cfe354a67091c88d04e54
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
                     radius: [10]
-            
+
             Label:
                 id: level_label
                 text: 'Lv. 1'
-<<<<<<< HEAD
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '22sp'
                 color: 1, 0.8, 0, 1
-=======
-                font_name: 'assets/fonts/PixelifySans-Bold.ttf' 
-                font_size: '24sp'
-                color: 1, 0.8, 0, 1  
->>>>>>> a681ca1bec5077f90a5cfe354a67091c88d04e54
                 text_size: self.size
                 halign: 'left'
-                valign: 'middle'  # 2. แก้เป็น middle
+                valign: 'bottom'
 
             Label:
                 id: exp_label
@@ -395,12 +377,11 @@
                 color: 1, 1, 1, 1
                 text_size: self.size
                 halign: 'left'
-<<<<<<< HEAD
                 valign: 'middle'
 
             Label:
                 id: hud_money_label
-                text: 'Money: $0'
+                text: 'Money: '
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '18sp'
                 color: 0.2, 0.9, 0.4, 1
@@ -417,23 +398,16 @@
                 text_size: self.size
                 halign: 'left'
                 valign: 'top'
-=======
-                valign: 'middle'  # 2. แก้เป็น middle
->>>>>>> a681ca1bec5077f90a5cfe354a67091c88d04e54
 
             Label:
                 id: stamina_label
                 text: 'Energy: 100 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                 font_size: '16sp'
-<<<<<<< HEAD
                 color: 0.2, 0.8, 1, 1
-=======
-                color: 0.2, 0.8, 1, 1  
->>>>>>> a681ca1bec5077f90a5cfe354a67091c88d04e54
                 text_size: self.size
                 halign: 'left'
-                valign: 'middle'  # 2. แก้เป็น middle
+                valign: 'middle'
 
 <PlayerWidget>:
     size_hint: None, None
