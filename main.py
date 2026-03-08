@@ -440,8 +440,12 @@ class MapScreen(Screen):
         # Iterate through the grid and instantiate OreBlocks
         for y, row in enumerate(self.game_state.grid_map):
             for x, cell in enumerate(row):
-                if cell is not None:  # There is an ore here
-                    block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                if cell is not None:  
+                    if cell == "entrance":
+                        block = MineEntrance(grid_x=x, grid_y=y)
+                    else:
+                        block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                    
                     self.ore_blocks_dict[(x, y)] = block
                     # Add to world layer. We add it but want player to render on top
                     # so we insert at the back of the widget tree (index > player index)

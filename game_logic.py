@@ -124,6 +124,10 @@ class GameState:
                 self.underground_map[path_y][rx] = None
                 self.underground_map[path_y+1][rx] = None
 
+        # 6. วางทางเข้าเหมืองบนแผนที่บนดิน (Surface Map)
+        # ให้ไว้ใกล้ๆ จุดเกิด สมมติว่าเป็นพิกัด (10, 8)
+        self.surface_map[8][10] = "entrance"
+
     def _weighted_random_ore(self, ore_pool):
         """สุ่มเลือกแร่ตาม weight (weight สูง = ได้บ่อย)"""
         total_weight = sum(w for _, w in ore_pool)
