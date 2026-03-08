@@ -629,8 +629,21 @@ class MapScreen(Screen):
         print("Descended to the mine layer.")
 
     def exit_mine(self):
-        # Placeholder
-        pass
+        player = self.ids.player_character
+        
+        # 1. Change depth back to Surface and reload map
+        self.game_state.current_depth = 0
+        self.render_initial_map()
+        
+        # 2. Restore previous surface coordinates so player appears exactly where they descended
+        player.x, player.y = self.surface_coords
+        
+        # 3. Hide the "Exit Mine" button
+        btn = self.ids.btn_exit_mine
+        btn.opacity = 0
+        btn.disabled = True
+        
+        print("Returned to the surface.")
 
     def on_keyboard_up(self, _window, key, _scancode):
         self.keys_pressed.discard(key)
