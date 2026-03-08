@@ -380,6 +380,7 @@ class MiningScreen(Screen):
 
 class MapScreen(Screen):
     camera_zoom = NumericProperty(1.0)
+    controls_hint = StringProperty("")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -390,6 +391,7 @@ class MapScreen(Screen):
         self.game_state = GameState()
         self.ore_blocks_dict = {}  # (grid_x, grid_y) -> OreBlock instance
         self.bind(camera_zoom=self.on_camera_zoom)
+        self.controls_hint = self.build_controls_hint()
         
         # Keep upgrade costs on this screen instance.
         self.pickaxe_level = 1
@@ -398,7 +400,12 @@ class MapScreen(Screen):
             3: {"stone": 20, "copper": 5},
             4: {"copper": 20, "iron": 10},
             5: {"iron": 30, "gold": 5}
+
         }
+
+    def build_controls_hint(self):
+        # Keep the help bar text in sync with the real key bindings.
+        return "Move: WASD / Arrows | Mine: E | Talk: F | Inventory: I or Tab | Upgrade: U"
 
     def on_enter(self):
         player = self.ids.player_character
@@ -652,8 +659,11 @@ class MapScreen(Screen):
         if not bought:
             return
 
+        # ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¹ÃƒÂ Ã‚Â¸Ã‚Â·ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¹Ã‚ÂÃƒÂ Ã‚Â¸Ã‚Â¥ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â§ÃƒÂ Ã‚Â¹Ã†â€™ÃƒÂ Ã‚Â¸Ã‚Â«ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¢ÃƒÂ Ã‚Â¸Ã‚Â´ÃƒÂ Ã‚Â¸Ã¢â‚¬ÂÃƒÂ Ã‚Â¹Ã¢â‚¬Å¾ÃƒÂ Ã‚Â¸Ã…Â¸ÃƒÂ Ã‚Â¸Ã¢â‚¬â€ÃƒÂ Ã‚Â¸Ã‚Â±ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã¢â‚¬â€ÃƒÂ Ã‚Â¸Ã‚ÂµÃƒÂ Ã‚Â¸Ã¢â‚¬â€œÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â²ÃƒÂ Ã‚Â¸Ã‚Â¢ÃƒÂ Ã‚Â¸Ã‚Â±ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¡ÃƒÂ Ã‚Â¹Ã¢â‚¬Å¾ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¹Ã‹â€ ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¸Ã‚ÂµÃƒÂ Ã‚Â¹Ã¢â‚¬Å¾ÃƒÂ Ã‚Â¸Ã…Â¸ÃƒÂ Ã‚Â¹Ã†â€™ÃƒÂ Ã‚Â¸Ã…Â ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã‚Â¢ÃƒÂ Ã‚Â¸Ã‚Â¹ÃƒÂ Ã‚Â¹Ã‹â€ 
+        self.auto_use_torch_if_needed()
         self.update_hud()
         self.update_sell_ui()
+        self.update_fog_overlay()
 
     def confirm_sell(self):
         """Perform the transaction and close the menu"""
