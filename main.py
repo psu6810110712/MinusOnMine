@@ -380,7 +380,7 @@ class MapScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.keys_pressed = set()
-        self.move_speed = 200
+        self.move_speed = 250
         self.camera = CameraController(zoom=self.camera_zoom)
         self.minimap_renderer = MinimapRenderer()
         self.game_state = GameState()
