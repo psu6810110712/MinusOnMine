@@ -945,6 +945,8 @@ class MapScreen(Screen):
             player_pos=(player.x + player.width / 2.0, player.y + player.height / 2.0),
             background_source="ground.png",
         )
+        self.update_fog_overlay()
+
     def toggle_upgrade_menu(self):
         """à¹€à¸›à¸´à¸”/à¸›à¸´à¸” à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡à¸­à¸±à¸›à¹€à¸à¸£à¸”"""
         overlay = self.ids.upgrade_overlay
