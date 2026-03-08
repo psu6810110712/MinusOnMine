@@ -1,4 +1,4 @@
-import random
+﻿import random
 
 from game_data import (
     COLLISION_GRID_SIZE,
@@ -62,7 +62,7 @@ class GameState:
         if not self.can_use_torch():
             return False
 
-        # à¸«à¸¢à¸´à¸šà¸„à¸šà¹€à¸žà¸¥à¸´à¸‡à¸¡à¸²à¹€à¸£à¸´à¹ˆà¸¡à¹ƒà¸Šà¹‰
+        # หยิบคบเพลิงมาเริ่มใช้
         self.torch_count -= 1
         self.torch_time_left = float(self.torch_duration_seconds)
         return True
@@ -71,14 +71,14 @@ class GameState:
         if not self.has_active_torch():
             return False
 
-        # à¸™à¸±à¸šà¹€à¸§à¸¥à¸²à¸„à¸šà¹€à¸žà¸¥à¸´à¸‡à¸—à¸µà¹ˆà¹€à¸«à¸¥à¸·à¸­
+        # นับเวลาคบเพลิงที่เหลือ
         self.torch_time_left = max(0.0, self.torch_time_left - dt)
         return self.torch_time_left <= 0
 
     def get_vision_radius(self):
         if self.has_active_torch():
             return self.torch_vision_radius
-        # à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸šà¹€à¸žà¸¥à¸´à¸‡à¸à¹‡à¸¢à¸±à¸‡à¹€à¸«à¹‡à¸™à¹ƒà¸à¸¥à¹‰ à¹†
+        # ไม่มีคบเพลิงก็ยังเห็นใกล้ ๆ
         return self.base_vision_radius
 
     def buy_torch(self):
@@ -166,27 +166,8 @@ class GameState:
         return leveled_up
 
     def consume_stamina(self, amount):
-        """à¸¥à¸”à¸„à¹ˆà¸² Stamina à¸–à¹‰à¸²à¸¡à¸µà¸žà¸­à¹ƒà¸«à¹‰à¸¥à¸” à¸„à¸·à¸™à¸„à¹ˆà¸² True, à¸–à¹‰à¸²à¹„à¸¡à¹ˆà¸žà¸­ à¸„à¸·à¸™à¸„à¹ˆà¸² False"""
+        """ลดค่า Stamina ถ้ามีพอให้ลด คืนค่า True, ถ้าไม่พอ คืนค่า False"""
         if self.current_stamina >= amount:
             self.current_stamina -= amount
-            return True
-        return False
-
-    def regenerate_stamina(self, amount):
-        """à¸Ÿà¸·à¹‰à¸™à¸Ÿà¸¹ Stamina à¸„à¸·à¸™à¸„à¹ˆà¸² True à¸–à¹‰à¸²à¸¡à¸µà¸à¸²à¸£à¸Ÿà¸·à¹‰à¸™à¸Ÿà¸¹ (à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹€à¸•à¹‡à¸¡à¸«à¸¥à¸­à¸”)"""
-        if self.current_stamina < self.max_stamina:
-            self.current_stamina += amount
-            # à¸”à¸±à¸à¹„à¸§à¹‰à¹„à¸¡à¹ˆà¹ƒà¸«à¹‰à¸žà¸¥à¸±à¸‡à¸‡à¸²à¸™à¸¥à¹‰à¸™à¹€à¸à¸´à¸™à¸«à¸¥à¸­à¸” (Max)
-            if self.current_stamina > self.max_stamina:
-                self.current_stamina = self.max_stamina
-            return True
-        return False
-    def regenerate_stamina(self, amount):
-        """à¸Ÿà¸·à¹‰à¸™à¸Ÿà¸¹ Stamina à¸„à¸·à¸™à¸„à¹ˆà¸² True à¸–à¹‰à¸²à¸¡à¸µà¸à¸²à¸£à¸Ÿà¸·à¹‰à¸™à¸Ÿà¸¹ (à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹€à¸•à¹‡à¸¡à¸«à¸¥à¸­à¸”)"""
-        if self.current_stamina < self.max_stamina:
-            self.current_stamina += amount
-            # à¸”à¸±à¸à¹„à¸§à¹‰à¹„à¸¡à¹ˆà¹ƒà¸«à¹‰à¸žà¸¥à¸±à¸‡à¸‡à¸²à¸™à¸¥à¹‰à¸™à¹€à¸à¸´à¸™à¸«à¸¥à¸­à¸” (Max)
-            if self.current_stamina > self.max_stamina:
-                self.current_stamina = self.max_stamina
             return True
         return False
