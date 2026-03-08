@@ -118,3 +118,10 @@ class GameState:
             leveled_up = True
             
         return leveled_up
+
+    def consume_stamina(self, amount):
+        """ลดค่า Stamina ถ้ามีพอให้ลด คืนค่า True, ถ้าไม่พอ คืนค่า False"""
+        if self.current_stamina >= amount:
+            self.current_stamina -= amount
+            return True
+        return False
