@@ -1,3 +1,29 @@
+<ControlActionButton@Button>:
+    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+    font_size: '16sp'
+    size_hint: None, None
+    width: dp(168)
+    height: dp(52)
+    background_normal: ''
+    background_down: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    accent_color: 0.35, 0.35, 0.35, 1
+    disabled_fill: 0.24, 0.24, 0.24, 0.72
+    canvas.before:
+        Color:
+            rgba: self.disabled_fill if self.disabled else ((self.accent_color[0] * 0.72, self.accent_color[1] * 0.72, self.accent_color[2] * 0.72, 1) if self.state == 'down' else self.accent_color)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [12]
+    canvas.after:
+        Color:
+            rgba: (1, 1, 1, 0.18) if not self.disabled else (1, 1, 1, 0.08)
+        Line:
+            rounded_rectangle: [self.x, self.y, self.width, self.height, 12]
+            width: 1.2
+
 <MenuScreen>:
     BoxLayout:
         orientation: 'vertical'
@@ -110,12 +136,12 @@
             pos_hint: {'x': 0.01, 'y': 0.01}
 
         Label:
-            text: '[ Press I or Tab to open Inventory ]'
+            text: root.controls_hint
             font_name: 'assets/fonts/PixelifySans-Medium.ttf'
             font_size: '16sp'
             color: 1, 0.9, 0.6, 0.9
             size_hint: None, None
-            size: 300, 40
+            size: 760, 40
             pos_hint: {'center_x': 0.5, 'y': 0.02}
 
         Button:
@@ -147,7 +173,7 @@
         BoxLayout:
             id: inventory_overlay
             orientation: 'vertical'
-            size_hint: 0.85, 0.85
+            size_hint: 0.72, 0.74
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             padding: dp(25)
             spacing: dp(15)
@@ -266,38 +292,48 @@
                     padding: dp(10)
 
             BoxLayout:
-                size_hint_y: 0.2
-                orientation: 'horizontal'
-                spacing: 20
+                size_hint_y: 0.18
+                orientation: 'vertical'
+                spacing: dp(12)
+
                 Label:
                     id: total_sell_label
                     text: 'Total Earned: $0'
                     font_name: 'assets/fonts/PixelifySans-Bold.ttf'
                     font_size: '24sp'
                     color: 0.2, 0.9, 0.4, 1
-                
-                Button:
-                    text: 'CLOSE'
-                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                    font_size: '20sp'
-                    background_color: 0.8, 0.2, 0.2, 1
-                    on_press: root.toggle_sell_menu()
+                    size_hint_y: None
+                    height: dp(34)
 
-                Button:
-                    id: buy_torch_button
-                    text: 'BUY TORCH'
-                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                    font_size: '20sp'
-                    background_color: 0.95, 0.65, 0.2, 1
-                    on_press: root.buy_torch()
-                    disabled: True
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(56)
+                    spacing: dp(14)
 
-                Button:
-                    text: 'CONFIRM SELL'
-                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                    font_size: '20sp'
-                    background_color: 0.2, 0.7, 0.3, 1
-                    on_press: root.confirm_sell()
+                    Widget:
+
+                    ControlActionButton:
+                        text: 'CLOSE'
+                        accent_color: 0.65, 0.16, 0.16, 1
+                        on_press: root.play_button_feedback(self)
+                        on_release: root.toggle_sell_menu()
+
+                    ControlActionButton:
+                        id: buy_torch_button
+                        text: 'BUY TORCH'
+                        accent_color: 0.62, 0.42, 0.14, 1
+                        on_press: root.play_button_feedback(self)
+                        on_release: root.buy_torch()
+                        disabled: True
+
+                    ControlActionButton:
+                        text: 'CONFIRM SELL'
+                        accent_color: 0.15, 0.52, 0.24, 1
+                        on_press: root.play_button_feedback(self)
+                        on_release: root.confirm_sell()
+
+                    Widget:
         BoxLayout:
             id: upgrade_overlay
             orientation: 'vertical'
@@ -348,23 +384,30 @@
         BoxLayout:
             orientation: 'vertical'
             size_hint: None, None
-            size: 240, 140
-            pos_hint: {'right': 0.99, 'top': 0.88}
-            padding: 10
+            size: 320, 190
+            pos_hint: {'right': 0.99, 'top': 0.90}
+            padding: dp(16)
+            spacing: dp(2)
             canvas.before:
                 Color:
-                    rgba: 0.1, 0.1, 0.1, 0.7
+                    rgba: 0.08, 0.08, 0.08, 0.82
                 RoundedRectangle:
                     pos: self.pos
                     size: self.size
-                    radius: [10]
-            
+                    radius: [14]
+                Color:
+                    rgba: 1, 0.85, 0.28, 0.12
+                RoundedRectangle:
+                    pos: self.x + dp(2), self.y + dp(2)
+                    size: self.width - dp(4), self.height - dp(4)
+                    radius: [12]
+
             Label:
                 id: level_label
                 text: 'Lv. 1'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '22sp'
-                color: 1, 0.8, 0, 1
+                font_size: '28sp'
+                color: 1, 0.82, 0.1, 1
                 text_size: self.size
                 halign: 'left'
                 valign: 'bottom'
@@ -373,7 +416,7 @@
                 id: exp_label
                 text: 'EXP: 0 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '14sp'
+                font_size: '18sp'
                 color: 1, 1, 1, 1
                 text_size: self.size
                 halign: 'left'
@@ -383,8 +426,8 @@
                 id: hud_money_label
                 text: 'Money: $0'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '18sp'
-                color: 0.2, 0.9, 0.4, 1
+                font_size: '22sp'
+                color: 0.2, 0.95, 0.44, 1
                 text_size: self.size
                 halign: 'left'
                 valign: 'top'
@@ -393,8 +436,8 @@
                 id: hud_torch_label
                 text: 'Torch: 0 | 00:00'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '16sp'
-                color: 1, 0.85, 0.45, 1
+                font_size: '20sp'
+                color: 1, 0.87, 0.46, 1
                 text_size: self.size
                 halign: 'left'
                 valign: 'top'
@@ -403,11 +446,86 @@
                 id: stamina_label
                 text: 'Energy: 100 / 100'
                 font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-                font_size: '16sp'
-                color: 0.2, 0.8, 1, 1
+                font_size: '20sp'
+                color: 0.2, 0.84, 1, 1
                 text_size: self.size
                 halign: 'left'
                 valign: 'top'
+
+        FloatLayout:
+            id: confirm_overlay
+            size_hint: 1, 1
+            opacity: 0
+            disabled: True
+
+            canvas.before:
+                Color:
+                    rgba: (0, 0, 0, 0.74) if not self.disabled else (0, 0, 0, 0)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: None, None
+                size: dp(430), dp(240)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                padding: dp(22)
+                spacing: dp(16)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.1, 0.1, 0.12, 0.98
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [18]
+                    Color:
+                        rgba: 0.95, 0.72, 0.22, 1
+                    Line:
+                        rounded_rectangle: [self.x, self.y, self.width, self.height, 18]
+                        width: 1.4
+
+                Label:
+                    text: root.confirm_title
+                    font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+                    font_size: '28sp'
+                    color: 1, 0.88, 0.4, 1
+                    size_hint_y: None
+                    height: dp(42)
+
+                Label:
+                    text: root.confirm_message
+                    font_name: 'assets/fonts/PixelifySans-Medium.ttf'
+                    font_size: '18sp'
+                    color: 0.92, 0.92, 0.92, 1
+                    halign: 'center'
+                    valign: 'middle'
+                    text_size: self.width - dp(24), None
+
+                Widget:
+
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(56)
+                    spacing: dp(14)
+
+                    Widget:
+
+                    ControlActionButton:
+                        text: 'CANCEL'
+                        accent_color: 0.42, 0.16, 0.16, 1
+                        on_press: root.play_button_feedback(self)
+                        on_release: root.hide_confirm_overlay()
+
+                    ControlActionButton:
+                        text: 'CONFIRM'
+                        accent_color: 0.15, 0.52, 0.24, 1
+                        on_press: root.play_button_feedback(self)
+                        on_release: root.run_confirm_action()
+
+                    Widget:
 
 <PlayerWidget>:
     size_hint: None, None
