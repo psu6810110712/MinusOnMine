@@ -272,11 +272,13 @@ class ItemDrop(Widget):
         py = self.target_player.y + self.target_player.height
         
         # เด้งข้อความสีเขียว "+XX EXP"
-        exp_text = FloatText(text=f"+{exp_gained} EXP", color=(0.3, 1, 0.3, 1), pos=(px, py))
+        exp_text = FloatingText(f"+{exp_gained} EXP", start_pos=(px, py), text_color=(0.3, 1, 0.3, 1))
         world.add_widget(exp_text)
+        
         if is_level_up:
-            print(f"LEVEL UP! You are now level {self.game_state.level}!")
-            lvl_text = FloatText(text="LEVEL UP!", color=(1, 0.8, 0, 1), pos=(px - 20, py + 40))
+            print(f"🎉 LEVEL UP! ตอนนี้เลเวล {self.game_state.level} แล้ว! 🎉")
+            # เด้งข้อความสีทอง "LEVEL UP!" ใหญ่ๆ
+            lvl_text = FloatingText("LEVEL UP!", start_pos=(px - 20, py + 40), text_color=(1, 0.8, 0, 1), font_size='35sp')
             world.add_widget(lvl_text)
             
         # Refresh the HUD after collecting the drop.
