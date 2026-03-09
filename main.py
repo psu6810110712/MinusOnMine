@@ -791,6 +791,12 @@ class MapScreen(Screen):
 
     def mine_action(self):
         player = self.ids.player_character
+        if not self.game_state.consume_stamina(3):
+            print("พลังงานหมด! ขุดไม่ได้แล้ว")
+            
+            return  
+            
+        self.update_hud()
         
         # Trigger animation state
         player.is_mining = True
