@@ -267,9 +267,17 @@ class ItemDrop(Widget):
         
         # Apply the EXP reward to the shared game state.
         is_level_up = self.game_state.add_exp(exp_gained)
+        world = self.map_screen.ids.world_layer
+        px = self.target_player.x + (self.target_player.width / 2) - 75
+        py = self.target_player.y + self.target_player.height
         
+        # เด้งข้อความสีเขียว "+XX EXP"
+        exp_text = FloatText(text=f"+{exp_gained} EXP", color=(0.3, 1, 0.3, 1), pos=(px, py))
+        world.add_widget(exp_text)
         if is_level_up:
             print(f"LEVEL UP! You are now level {self.game_state.level}!")
+            lvl_text = FloatText(text="LEVEL UP!", color=(1, 0.8, 0, 1), pos=(px - 20, py + 40))
+            world.add_widget(lvl_text)
             
         # Refresh the HUD after collecting the drop.
         self.map_screen.update_hud()
@@ -839,12 +847,12 @@ class MapScreen(Screen):
                 ore_type = block.ore_type
                 
                 block.mine() #
-                del self.ore_blocks_dict[(grid_x, grid_y)] #
-                self.game_state.grid_map[grid_y][grid_x] = None #
+                del self.ore_blocks_dict[(grid_x, grid_y)] 
+                self.game_state.grid_map[grid_y][grid_x] = None 
                 
-                world = self.ids.world_layer #
-                drop_x = grid_x * 120 + 40 #
-                drop_y = grid_y * 120 + 40 #
+                world = self.ids.world_layer 
+                drop_x = grid_x * 120 + 40 
+                drop_y = grid_y * 120 + 40 
                 
                 # สปอนไอเทมดรอป
                 drop = ItemDrop(
@@ -873,6 +881,7 @@ class MapScreen(Screen):
                 
                 
                 print(f"Mined {ore_type} at ({grid_x}, {grid_y})! Dropping item...")
+        
 
     def enter_mine(self):
         player = self.ids.player_character
