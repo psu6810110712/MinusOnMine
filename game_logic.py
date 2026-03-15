@@ -98,7 +98,7 @@ class GameState:
 
     # --- ระบบการสร้างแผนที่ ---
     def generate_map(self):
-        """สุ่มวางแร่ลงในตาราง โดยเช็กระยะห่างจากน้ำ"""
+        """สร้างแผนที่ตามความลึก - Surface จะว่างเปล่า (มีแค่ entrance), Underground จะมีแร่"""
         ore_pool = []
         for ore_id, ore_obj in ORES.items():
             ore_pool.append((ore_id, ore_obj.weight))
@@ -107,34 +107,37 @@ class GameState:
         for y in range(self.grid_height):
             row = []
             for x in range(self.grid_width):
-                center_px = (x * 120) + 60
-                center_py = (y * 120) + 60
-
-                if (x, y) in self.forbidden_grids:
-                    row.append(None)
-                    continue
-
-                safe_margin = 55
-                scan_points = [
-                    (center_px, center_py),
-                    (center_px - safe_margin, center_py),
-                    (center_px + safe_margin, center_py),
-                    (center_px, center_py - safe_margin),
-                    (center_px, center_py + safe_margin),
-                ]
-
-                is_near_water = False
-                for px, py in scan_points:
-                    if self.is_water_tile(px, py):
-                        is_near_water = True
-                        break
-
-                if is_near_water:
-                    row.append(None)
-                elif random.random() < 0.6:
-                    row.append(self._weighted_random_ore(ore_pool))
+                if self.current_depth == 0:
+                    if x == 10 and y == 8:
+                        row.append("entrance")
+                    else:
+                        row.append(None)
                 else:
-                    row.append(None)
+                    if (x, y) in self.forbidden_grids:
+                        row.append(None)
+                        continue
+
+                    safe_margin = 55
+                    scan_points = [
+                        ((x * 120) + 60, (y * 120) + 60),
+                        ((x * 120) + 60 - safe_margin, (y * 120) + 60),
+                        ((x * 120) + 60 + safe_margin, (y * 120) + 60),
+                        ((x * 120) + 60, (y * 120) + 60 - safe_margin),
+                        ((x * 120) + 60, (y * 120) + 60 + safe_margin),
+                    ]
+
+                    is_near_water = False
+                    for px, py in scan_points:
+                        if self.is_water_tile(px, py):
+                            is_near_water = True
+                            break
+
+                    if is_near_water:
+                        row.append(None)
+                    elif random.random() < 0.6:
+                        row.append(self._weighted_random_ore(ore_pool))
+                    else:
+                        row.append(None)
             self.grid_map.append(row)
 
     def _weighted_random_ore(self, ore_pool):

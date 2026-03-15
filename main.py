@@ -17,7 +17,7 @@ from kivy.factory import Factory
 from kivy.metrics import dp
 from game_logic import GameState
 from game_data import ORES
-from widgets import FloatText, NPCWidget, SellItemRow, SellOverlay, ExplosionEffect
+from widgets import FloatText, NPCWidget, SellItemRow, SellOverlay, ExplosionEffect, MineEntrance
 
 # Registering custom widgets with the Factory so that the .kv file can find them
 Factory.register('SellOverlay', cls=SellOverlay)
@@ -521,12 +521,19 @@ class MapScreen(Screen):
             if block.parent:
                 block.parent.remove_widget(block)
         self.ore_blocks_dict.clear()
+        
+        # Regenerate map based on current depth
+        self.game_state.generate_map()
 
         # Iterate through the grid and instantiate OreBlocks
         for y, row in enumerate(self.game_state.grid_map):
             for x, cell in enumerate(row):
-                if cell is not None:  # There is an ore here
-                    block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                if cell is not None:  
+                    if cell == "entrance":
+                        block = MineEntrance(grid_x=x, grid_y=y)
+                    else:
+                        block = OreBlock(grid_x=x, grid_y=y, ore_type=cell)
+                    
                     self.ore_blocks_dict[(x, y)] = block
                     # Add to world layer. We add it but want player to render on top
                     # so we insert at the back of the widget tree (index > player index)
@@ -846,6 +853,12 @@ class MapScreen(Screen):
         if 0 <= grid_x < self.game_state.grid_width and 0 <= grid_y < self.game_state.grid_height:
             if (grid_x, grid_y) in self.ore_blocks_dict:
                 block = self.ore_blocks_dict[(grid_x, grid_y)]
+                
+                if isinstance(block, MineEntrance):
+                    print("Found Mine Entrance! Descending to Underground...")
+                    self.enter_mine()
+                    return
+                
                 ore_type = block.ore_type
                 
                 block.mine() #
