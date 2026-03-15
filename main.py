@@ -433,6 +433,9 @@ class MapScreen(Screen):
     controls_hint = StringProperty("")
     confirm_title = StringProperty("")
     confirm_message = StringProperty("")
+    world_background_source = StringProperty("ground.png")
+    world_background_rgba = ListProperty([1, 1, 1, 1])
+    world_background_tex_coords = ListProperty([0, 0, 1, 0, 1, 1, 0, 1])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -913,7 +916,16 @@ class MapScreen(Screen):
         player.x = (world.width - player.width) / 2.0
         player.y = (world.height - player.height) / 2.0
         
-        # 4. Show the "Exit Mine" button
+        # 4. Update background for mine with texture
+        self.world_background_source = "underground_floor.png"
+        self.world_background_rgba = [0.8, 0.8, 0.8, 1]  # Slightly lightened to show texture
+        
+        # Calculate UV tiling based on world size / texture size (512x512)
+        u_max = world.width / 512.0
+        v_max = world.height / 512.0
+        self.world_background_tex_coords = [0, 0, u_max, 0, u_max, v_max, 0, v_max]
+        
+        # 5. Show the "Exit Mine" button
         btn = self.ids.btn_exit_mine
         btn.opacity = 1
         btn.disabled = False
@@ -930,7 +942,12 @@ class MapScreen(Screen):
         # 2. Restore previous surface coordinates so player appears exactly where they descended
         player.x, player.y = self.surface_coords
         
-        # 3. Hide the "Exit Mine" button
+        # 3. Update background back to surface
+        self.world_background_source = "ground.png"
+        self.world_background_rgba = [1, 1, 1, 1]
+        self.world_background_tex_coords = [0, 0, 1, 0, 1, 1, 0, 1]
+        
+        # 4. Hide the "Exit Mine" button
         btn = self.ids.btn_exit_mine
         btn.opacity = 0
         btn.disabled = True
@@ -990,14 +1007,14 @@ class MapScreen(Screen):
                 center_x + outer_radius,
                 center_y - outer_radius,
                 center_y + outer_radius,
-                0.78,
+                0.55 if self.game_state.current_depth == 1 else 0.78,
             )
             draw_band(
                 center_x - inner_radius,
                 center_x + inner_radius,
                 center_y - inner_radius,
                 center_y + inner_radius,
-                0.35,
+                0.2 if self.game_state.current_depth == 1 else 0.35,
             )
 
     def update(self, dt):
@@ -1132,7 +1149,7 @@ class MapScreen(Screen):
             world_size=(world.width, world.height),
             camera_rect=camera_rect,
             player_pos=(player.x + player.width / 2.0, player.y + player.height / 2.0),
-            background_source="ground.png",
+            background_source=self.world_background_source,
         )
         self.update_fog_overlay()
 

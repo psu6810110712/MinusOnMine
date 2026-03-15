@@ -112,11 +112,12 @@
 
             canvas.before:
                 Color:
-                    rgba: 1, 1, 1, 1 
+                    rgba: root.world_background_rgba
                 Rectangle:
                     pos: 0, 0
                     size: self.size
-                    source: 'ground.png' 
+                    source: root.world_background_source
+                    tex_coords: root.world_background_tex_coords
 
             PlayerWidget:
                 id: player_character
