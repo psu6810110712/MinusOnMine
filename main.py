@@ -2,6 +2,7 @@ import random
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.screenmanager import Screen, ScreenManager
@@ -280,6 +281,11 @@ class ItemDrop(Widget):
             # เด้งข้อความสีทอง "LEVEL UP!" ใหญ่ๆ
             lvl_text = FloatingText("LEVEL UP!", start_pos=(px - 20, py + 40), text_color=(1, 0.8, 0, 1), font_size='35sp')
             world.add_widget(lvl_text)
+            
+            # เล่นเสียง level up
+            level_up_sound = SoundLoader.load('assets/sounds/fahh.m4a')
+            if level_up_sound:
+                level_up_sound.play()
             
         # Refresh the HUD after collecting the drop.
         self.map_screen.update_hud()
@@ -1007,14 +1013,14 @@ class MapScreen(Screen):
                 center_x + outer_radius,
                 center_y - outer_radius,
                 center_y + outer_radius,
-                0.55 if self.game_state.current_depth == 1 else 0.78,
+                0.85 if self.game_state.current_depth == 1 else 0.95,
             )
             draw_band(
                 center_x - inner_radius,
                 center_x + inner_radius,
                 center_y - inner_radius,
                 center_y + inner_radius,
-                0.2 if self.game_state.current_depth == 1 else 0.35,
+                0.5 if self.game_state.current_depth == 1 else 0.6,
             )
 
     def update(self, dt):
