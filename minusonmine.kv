@@ -145,26 +145,7 @@
             size: 760, 40
             pos_hint: {'center_x': 0.5, 'y': 0.02}
 
-        Button:
-            id: btn_exit_mine
-            text: 'Exit Mine'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.85}
-            background_color: 0.2, 0.6, 0.8, 1
-            opacity: 0
-            disabled: True
-            on_press: root.exit_mine()
 
-        Button:
-            text: 'Back to Menu'
-            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
-            size_hint: None, None
-            size: 150, 50
-            pos_hint: {'right': 0.98, 'top': 0.98}
-            background_color: 0.8, 0.2, 0.2, 1
-            on_press: root.manager.current = 'menu'
 
         Widget:
             id: minimap_widget
@@ -539,6 +520,29 @@
                         on_release: root.run_confirm_action()
 
                     Widget:
+
+        Button:
+            text: 'Back to Menu'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.98}
+            background_color: 0.8, 0.2, 0.2, 1
+            on_release: 
+                print("Returning to Menu...")
+                root.manager.current = 'menu'
+
+        Button:
+            id: btn_exit_mine
+            text: 'Exit Mine'
+            font_name: 'assets/fonts/PixelifySans-Bold.ttf'
+            size_hint: None, None
+            size: 150, 50
+            pos_hint: {'right': 0.98, 'top': 0.91}
+            background_color: 0.2, 0.6, 0.8, 1
+            opacity: 0
+            disabled: True
+            on_release: root.exit_mine()
 
 <PlayerWidget>:
     size_hint: None, None

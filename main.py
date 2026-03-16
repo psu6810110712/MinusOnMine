@@ -493,6 +493,8 @@ class MapScreen(Screen):
         overlay = self.ids.confirm_overlay
         overlay.opacity = 0
         overlay.disabled = True
+        if overlay.parent:
+            overlay.parent.remove_widget(overlay)
         self.pending_confirm_action = None
 
     def run_confirm_action(self):
